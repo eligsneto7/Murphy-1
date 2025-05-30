@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Seu Eco Cósmico - {{ data.star.name }}{% endblock %}
+{% block title %}Análise Murphy-1 - {{ data.star.name }}{% endblock %}
 
 {% block content %}
 <div class="result-header">
@@ -9,7 +9,7 @@
             <span>← NOVA ANÁLISE</span>
         </a>
         <div class="result-title">
-            <h1>SEU ECO CÓSMICO</h1>
+            <h1>ANÁLISE MURPHY-1 COMPLETA</h1>
             <p>{{ data.birth_info.date }} • {{ data.birth_info.time }} • {{ data.birth_info.location }}</p>
         </div>
     </div>
@@ -20,7 +20,7 @@
     <div class="zenith-view-section">
         <div class="zenith-container">
             <h2 class="section-title">VISTA DO ZÊNITE</h2>
-            <p class="section-subtitle">Representação do céu no momento do seu nascimento</p>
+            <p class="section-subtitle">Representação do espaço-tempo no momento do seu nascimento</p>
             
             <div class="zenith-display">
                 <!-- Visualizador Moderno Interativo -->
@@ -72,6 +72,56 @@
             <div class="cosmic-message">
                 <div class="message-content">
                     <p class="message-text">{{ data.cosmic_message }}</p>
+                </div>
+            </div>
+            
+            <!-- Curiosidades da Estrela - Nova Seção -->
+            <div class="star-curiosities-section">
+                <h3 class="curiosities-title">🌟 ARQUIVO TEMPORAL DA ESTRELA</h3>
+                
+                <div class="curiosities-grid">
+                    <!-- Idade e Era Cósmica -->
+                    <div class="curiosity-module temporal">
+                        <div class="module-header">
+                            <h4>⏰ LINHA TEMPORAL CÓSMICA</h4>
+                        </div>
+                        <div class="module-content">
+                            <p class="age-display">{{ data.star.curiosities.age_formatted }}</p>
+                            <p class="era-birth">{{ data.star.curiosities.birth_era }}</p>
+                            <p class="temporal-message">{{ data.star.curiosities.temporal_message }}</p>
+                            
+                            <div class="timeline-comparisons">
+                                {% for comparison in data.star.curiosities.timeline_comparison.comparisons %}
+                                <p class="comparison-item">• {{ comparison }}</p>
+                                {% endfor %}
+                                <p class="light-era">Luz iniciou jornada: {{ data.star.curiosities.timeline_comparison.era_when_light_started }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- História da Estrela -->
+                    <div class="curiosity-module historical">
+                        <div class="module-header">
+                            <h4>📜 HISTÓRIA ESTELAR</h4>
+                        </div>
+                        <div class="module-content">
+                            <p class="star-history">{{ data.star.curiosities.history }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Fatos Interessantes -->
+                    <div class="curiosity-module facts">
+                        <div class="module-header">
+                            <h4>⚡ DADOS FASCINANTES</h4>
+                        </div>
+                        <div class="module-content">
+                            <ul class="fun-facts-list">
+                                {% for fact in data.star.curiosities.fun_facts %}
+                                <li class="fact-item">{{ fact }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -251,7 +301,7 @@
 
 <div class="result-actions">
     <button onclick="window.print()" class="action-button">
-        <span>SALVAR RELATÓRIO</span>
+        <span>SALVAR RELATÓRIO MURPHY-1</span>
     </button>
     <a href="/" class="action-button secondary">
         <span>NOVA ANÁLISE</span>

@@ -18,7 +18,7 @@ import asyncio
 from app.modern_sky_renderer import ModernSkyRenderer
 from app.astrology_calculator import AstrologyCalculator
 
-app = FastAPI(title="Cosmic Echo", description="Conecte-se com sua estrela do zênite")
+app = FastAPI(title="Murphy-1", description="Explore as coordenadas do espaço-tempo e encontre sua estrela-guia")
 
 # Configuração de templates e arquivos estáticos
 templates = Jinja2Templates(directory="app/templates")
@@ -273,6 +273,12 @@ class StarCatalog:
         # Calcular velocidade radial estimada
         radial_velocity_info = self.estimate_radial_velocity(star_name, magnitude)
         
+        # Estimar classe espectral
+        spectral_class = self.estimate_spectral_class(magnitude)
+        
+        # Gerar curiosidades da estrela
+        curiosities = self.generate_star_curiosities(star_name, magnitude, estimated_distance, spectral_class)
+        
         return {
             'name': star_name,
             'magnitude': round(magnitude, 2),
@@ -282,11 +288,12 @@ class StarCatalog:
             'estimated_distance_ly': estimated_distance,
             'color': color,
             'priority_type': priority_type,
-            'spectral_class': self.estimate_spectral_class(magnitude),
+            'spectral_class': spectral_class,
             'constellation': self.estimate_constellation(ra_degrees, dec_degrees),
             'radial_velocity': radial_velocity_info['velocity'],
             'radial_velocity_direction': radial_velocity_info['direction'],
-            'radial_velocity_description': radial_velocity_info['description']
+            'radial_velocity_description': radial_velocity_info['description'],
+            'curiosities': curiosities
         }
     
     def estimate_spectral_class(self, magnitude: float) -> str:
@@ -406,6 +413,260 @@ class StarCatalog:
             'direction': direction,
             'description': f"{emoji} {description}"
         }
+    
+    def generate_star_curiosities(self, star_name: str, magnitude: float, distance: float, spectral_class: str) -> dict:
+        """Gera curiosidades interessantes sobre a estrela"""
+        import random
+        
+        # Base de dados de curiosidades para estrelas famosas
+        famous_stars_data = {
+            'Sirius': {
+                'age_billion_years': 0.25,
+                'history': 'Conhecida pelos antigos egípcios como Sopdet, Sirius era associada à deusa Ísis. Seu surgimento no céu marcava o início da inundação anual do Nilo, crucial para a agricultura.',
+                'fun_facts': [
+                    'É na verdade um sistema estelar duplo',
+                    'Sua companheira é uma anã branca super densa',
+                    'É 25 vezes mais luminosa que o Sol',
+                    'Aparece com cores cintilantes devido à atmosfera terrestre'
+                ]
+            },
+            'Vega': {
+                'age_billion_years': 0.455,
+                'history': 'Vega foi a primeira estrela fotografada em 1850 e a primeira a ter seu espectro registrado. Há 12.000 anos, era a estrela polar, e voltará a ser em cerca de 13.727 d.C.',
+                'fun_facts': [
+                    'Foi usada como padrão de magnitude zero',
+                    'Tem um disco de detritos que pode indicar planetas',
+                    'Gira tão rápido que é achatada nos polos',
+                    'Era a estrela polar dos neandertais'
+                ]
+            },
+            'Betelgeuse': {
+                'age_billion_years': 0.01,
+                'history': 'Uma das estrelas mais famosas de Órion, Betelgeuse é uma supergigante vermelha que pode explodir como supernova a qualquer momento (astronomicamente falando).',
+                'fun_facts': [
+                    'Se estivesse no lugar do Sol, englobaria a órbita de Júpiter',
+                    'Sua luminosidade varia irregularmente',
+                    'Pode explodir nos próximos 100.000 anos',
+                    'Ejeta material suficiente para formar planetas'
+                ]
+            },
+            'Rigel': {
+                'age_billion_years': 0.008,
+                'history': 'Apesar de ser designada como Beta Orionis, Rigel é geralmente mais brilhante que Betelgeuse (Alpha Orionis). É uma das estrelas mais luminosas conhecidas.',
+                'fun_facts': [
+                    'É 120.000 vezes mais luminosa que o Sol',
+                    'É na verdade um sistema múltiplo de 4 estrelas',
+                    'Suas camadas externas são ejetadas por ventos estelares',
+                    'É jovem demais para ter planetas rochosos formados'
+                ]
+            },
+            'Arcturus': {
+                'age_billion_years': 7.1,
+                'history': 'Arcturus é uma das estrelas mais antigas do halo galáctico. Move-se de forma diferente das outras estrelas, sugerindo que pertencia a uma galáxia menor que foi absorvida pela Via Láctea.',
+                'fun_facts': [
+                    'É uma das estrelas mais rápidas no céu',
+                    'Tem baixa metalicidade, indicando origem antiga',
+                    'Em 1933, sua luz foi usada para abrir a Feira Mundial de Chicago',
+                    'Pode ser um intruso de uma galáxia antiga'
+                ]
+            },
+            'Capella': {
+                'age_billion_years': 0.59,
+                'history': 'Capella é na verdade um sistema complexo de seis estrelas. Era considerada uma única estrela pelos antigos, mas telescópios modernos revelaram sua verdadeira natureza múltipla.',
+                'fun_facts': [
+                    'Contém duas gigantes douradas e quatro anãs vermelhas',
+                    'É a terceira estrela mais brilhante do hemisfério norte',
+                    'Suas componentes principais orbitam uma à outra em 104 dias',
+                    'Foi usada para testes iniciais de interferometria estelar'
+                ]
+            }
+        }
+        
+        # Se a estrela está na base de dados
+        if star_name in famous_stars_data:
+            star_data = famous_stars_data[star_name]
+            age = star_data['age_billion_years']
+            history = star_data['history']
+            fun_facts = star_data['fun_facts']
+        else:
+            # Gerar dados baseados nas características da estrela
+            age = self.estimate_star_age(magnitude, spectral_class)
+            history = self.generate_generic_history(star_name, spectral_class)
+            fun_facts = self.generate_generic_facts(spectral_class, magnitude, distance)
+        
+        # Converter idade para diferentes escalas de tempo
+        age_in_years = age * 1_000_000_000
+        light_travel_years = distance
+        
+        # Mensagem temporal Murphy-1
+        temporal_message = self.generate_temporal_message(age, light_travel_years)
+        
+        return {
+            'age_billion_years': age,
+            'age_formatted': f"{age:.2f} bilhões de anos",
+            'history': history,
+            'fun_facts': fun_facts,
+            'temporal_message': temporal_message,
+            'birth_era': self.determine_birth_era(age),
+            'timeline_comparison': self.create_timeline_comparison(age, light_travel_years)
+        }
+    
+    def estimate_star_age(self, magnitude: float, spectral_class: str) -> float:
+        """Estima a idade da estrela baseada em suas características"""
+        import random
+        
+        # Idade estimada baseada na classe espectral
+        if 'O' in spectral_class or 'B' in spectral_class:
+            # Estrelas muito quentes e jovens
+            return random.uniform(0.001, 0.1)
+        elif 'A' in spectral_class:
+            # Estrelas quentes, relativamente jovens
+            return random.uniform(0.1, 2.0)
+        elif 'F' in spectral_class:
+            # Estrelas similares ao Sol, mas um pouco mais quentes
+            return random.uniform(1.0, 8.0)
+        elif 'G' in spectral_class:
+            # Estrelas tipo solar
+            return random.uniform(1.0, 12.0)
+        elif 'K' in spectral_class:
+            # Estrelas laranjas, de longa vida
+            return random.uniform(5.0, 15.0)
+        elif 'M' in spectral_class:
+            # Anãs vermelhas, muito longevas
+            return random.uniform(8.0, 13.8)  # Até a idade do universo
+        else:
+            # Estimativa genérica
+            return random.uniform(1.0, 10.0)
+    
+    def generate_generic_history(self, star_name: str, spectral_class: str) -> str:
+        """Gera uma história genérica para estrelas menos conhecidas"""
+        type_descriptions = {
+            'O': 'uma jovem gigante azul, nascida em uma região de intensa formação estelar',
+            'B': 'uma estrela jovem e quente, típica de aglomerados estelares ativos',
+            'A': 'uma estrela branca em sua sequência principal, queimando hidrogênio em seu núcleo',
+            'F': 'uma estrela branco-amarelada, ligeiramente mais massiva que o Sol',
+            'G': 'uma estrela amarela similar ao nosso Sol, estável em sua sequência principal',
+            'K': 'uma estrela laranja de longa vida, menor e mais fria que o Sol',
+            'M': 'uma anã vermelha, o tipo mais comum de estrela na galáxia'
+        }
+        
+        spectral_type = spectral_class[0] if spectral_class else 'G'
+        description = type_descriptions.get(spectral_type, 'uma estrela de características interessantes')
+        
+        return f"{star_name} é {description}. Como muitas estrelas em nossa região da galáxia, ela se formou a partir do colapso de uma nuvem molecular, iniciando sua jornada cósmica através do espaço-tempo."
+    
+    def generate_generic_facts(self, spectral_class: str, magnitude: float, distance: float) -> list:
+        """Gera fatos interessantes baseados nas características da estrela"""
+        facts = []
+        
+        # Fatos baseados na distância
+        if distance < 50:
+            facts.append(f"É uma das estrelas mais próximas da Terra, a apenas {distance:.0f} anos-luz")
+        elif distance > 1000:
+            facts.append(f"Sua luz viajou {distance:,.0f} anos-luz através do espaço para chegar até você")
+        
+        # Fatos baseados na magnitude
+        if magnitude < 2.0:
+            facts.append("É visível a olho nu mesmo em céus urbanos com poluição luminosa")
+        elif magnitude < 4.0:
+            facts.append("É facilmente visível a olho nu em noites claras")
+        else:
+            facts.append("Requer céus escuros para ser observada a olho nu")
+        
+        # Fatos baseados na classe espectral
+        if 'O' in spectral_class or 'B' in spectral_class:
+            facts.append("Queima combustível tão rapidamente que viverá apenas milhões de anos")
+            facts.append("Termina sua vida de forma dramática como supernova")
+        elif 'G' in spectral_class:
+            facts.append("Tem temperatura e composição similares ao nosso Sol")
+            facts.append("Pode hospedar planetas com condições favoráveis à vida")
+        elif 'M' in spectral_class:
+            facts.append("Viverá por trilhões de anos, muito além da idade atual do universo")
+            facts.append("É parte do tipo mais comum de estrela na Via Láctea")
+        
+        return facts[:4]  # Retornar no máximo 4 fatos
+    
+    def generate_temporal_message(self, age_billion_years: float, light_distance: float) -> str:
+        """Gera mensagem temporal estilo Murphy-1/Interestelar"""
+        age_millions = age_billion_years * 1000
+        
+        if age_billion_years < 0.1:
+            temporal_context = "uma estrela-criança no tempo cósmico"
+        elif age_billion_years < 1:
+            temporal_context = "uma estrela jovem na linha temporal universal"
+        elif age_billion_years < 5:
+            temporal_context = "uma estrela em sua idade adulta cósmica"
+        elif age_billion_years < 10:
+            temporal_context = "uma estrela veterana do cosmos"
+        else:
+            temporal_context = "uma estrela anciã, testemunha da evolução galáctica"
+        
+        return f"No espaço-tempo quadridimensional, {temporal_context} observou sua chegada ao universo. Sua luz, viajando por {light_distance:,.0f} anos através das coordenadas espaciais, carrega informações de quando você ainda era apenas uma possibilidade quântica."
+    
+    def determine_birth_era(self, age_billion_years: float) -> str:
+        """Determina a era cósmica do nascimento da estrela"""
+        if age_billion_years > 13:
+            return "Era Primordial (impossível - anterior ao Big Bang)"
+        elif age_billion_years > 10:
+            return "Era das Primeiras Galáxias"
+        elif age_billion_years > 8:
+            return "Era da Formação Galáctica Ativa"
+        elif age_billion_years > 5:
+            return "Era da Maturidade Galáctica"
+        elif age_billion_years > 1:
+            return "Era Solar (similar ao Sol)"
+        else:
+            return "Era Moderna da Formação Estelar"
+    
+    def create_timeline_comparison(self, star_age: float, light_travel: float) -> dict:
+        """Cria comparações temporais interessantes"""
+        earth_age = 4.54  # bilhões de anos
+        universe_age = 13.8  # bilhões de anos
+        
+        star_age_years = star_age * 1_000_000_000
+        
+        comparisons = []
+        
+        if star_age < earth_age:
+            difference = earth_age - star_age
+            comparisons.append(f"Nasceu {difference:.1f} bilhões de anos após a Terra")
+        else:
+            difference = star_age - earth_age
+            comparisons.append(f"É {difference:.1f} bilhões de anos mais antiga que a Terra")
+        
+        if light_travel < 100:
+            comparisons.append(f"Sua luz é praticamente contemporânea à escala humana")
+        elif light_travel < 1000:
+            comparisons.append(f"Sua luz começou a jornada antes das primeiras civilizações")
+        else:
+            comparisons.append(f"Sua luz começou a viajar na era dos dinossauros")
+        
+        return {
+            'star_age_percent_of_universe': (star_age / universe_age) * 100,
+            'comparisons': comparisons,
+            'era_when_light_started': self.calculate_light_start_era(light_travel)
+        }
+    
+    def calculate_light_start_era(self, light_years: float) -> str:
+        """Calcula que era histórica a luz começou a viajar"""
+        years_ago = light_years  # anos-luz = anos no passado
+        
+        if years_ago < 100:
+            return "Era moderna recente"
+        elif years_ago < 2000:
+            return "Era do Império Romano"
+        elif years_ago < 10000:
+            return "Era Neolítica"
+        elif years_ago < 100000:
+            return "Era dos primeiros Homo sapiens"
+        elif years_ago < 1000000:
+            return "Era Pleistocena"
+        elif years_ago < 65000000:
+            return "Era Cenozoica"
+        elif years_ago < 250000000:
+            return "Era dos dinossauros"
+        else:
+            return "Era Paleozoica ou anterior"
 
 # Inicializar objetos globais
 calculator = AstronomicalCalculator()
@@ -425,7 +686,7 @@ async def calculate_cosmic_echo(
     city: str = Form(...),
     country: str = Form(...)
 ):
-    """Calcula o eco cósmico do usuário"""
+    """Calcula a análise temporal Murphy-1 do usuário"""
     try:
         # Parse da data e hora
         birth_datetime_str = f"{birth_date} {birth_time}"
@@ -500,7 +761,7 @@ def generate_cosmic_message(star: dict) -> str:
 @app.get("/api/health")
 async def health_check():
     """Endpoint de verificação de saúde"""
-    return {"status": "healthy", "message": "Cosmic Echo está funcionando!"}
+    return {"status": "healthy", "message": "Murphy-1 está operacional e pronto para análise temporal!"}
 
 # Remover a execução direta para deploy
 # if __name__ == "__main__":

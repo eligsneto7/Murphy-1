@@ -1,19 +1,35 @@
 {% extends "base.html" %}
 
-{% block title %}Cosmic Echo - Descubra Sua Estrela do Zênite{% endblock %}
+{% block title %}Murphy-1 - Sistema de Análise Temporal{% endblock %}
 
 {% block content %}
 <div class="hero-section">
     <div class="hero-content">
         <h1 class="hero-title">
-            <span class="title-main">COSMIC</span>
-            <span class="title-accent">ECHO</span>
+            <span class="title-main">MURPHY</span>
+            <span class="title-accent">-1</span>
         </h1>
         <p class="hero-subtitle">
-            Descubra a estrela que estava no zênite no momento exato do seu nascimento
+            Sistema de análise temporal e navegação estelar
         </p>
         <div class="hero-description">
-            <p>Cada momento no cosmos é único. Quando você nasceu, uma estrela específica estava perfeitamente alinhada acima de você, no zênite do céu. Descubra qual era essa estrela e conecte-se com sua história cósmica.</p>
+            <p>Cada momento no espaço-tempo é uma coordenada única. Quando você nasceu, uma estrela específica estava perfeitamente alinhada acima de você! Descubra a estrela que te acompanha desde o seu nascimento.</p>
+        </div>
+        
+        <!-- TARS Companion -->
+        <div class="tars-companion">
+            <div class="tars-robot">
+                <div class="tars-body">
+                    <div class="tars-segment"></div>
+                    <div class="tars-segment"></div>
+                    <div class="tars-segment"></div>
+                    <div class="tars-segment"></div>
+                </div>
+                <div class="tars-light"></div>
+            </div>
+            <div class="tars-dialogue">
+                <p>"Humor: 75%. Análise temporal pronta para início."</p>
+            </div>
         </div>
     </div>
 </div>
@@ -22,7 +38,7 @@
     <div class="form-container">
         <div class="form-header">
             <h2>COORDENADAS TEMPORAIS E ESPACIAIS</h2>
-            <p>Insira os dados do seu nascimento para calcular seu eco cósmico</p>
+            <p>Insira os dados do seu nascimento para iniciar a análise Murphy-1</p>
         </div>
         
         <form id="cosmic-form" action="/calculate" method="post" class="cosmic-form">
@@ -62,7 +78,7 @@
             
             <div class="form-actions">
                 <button type="submit" class="cosmic-button">
-                    <span class="button-text">CALCULAR ECO CÓSMICO</span>
+                    <span class="button-text">INICIAR ANÁLISE MURPHY-1</span>
                     <span class="button-accent">INITIATE STELLAR ANALYSIS</span>
                 </button>
             </div>
@@ -80,14 +96,14 @@
         
         <div class="info-card">
             <div class="info-icon">🌌</div>
-            <h3>CONEXÃO CÓSMICA</h3>
-            <p>Cada estrela tem uma história única. Descubra a distância, classe espectral e características da estrela que testemunhou seu primeiro momento.</p>
+            <h3>CONEXÃO TEMPORAL</h3>
+            <p>Cada estrela tem uma história única através do espaço-tempo. Descubra a idade, distância e características da estrela que testemunhou seu primeiro momento.</p>
         </div>
         
         <div class="info-card">
-            <div class="info-icon">🔭</div>
-            <h3>VISUALIZAÇÃO IMERSIVA</h3>
-            <p>Experimente uma representação visual do céu no momento do seu nascimento, com sua estrela do zênite destacada em uma interface inspirada em Interestelar.</p>
+            <div class="info-icon">🤖</div>
+            <h3>INTERFACE MURPHY-1</h3>
+            <p>Experimente uma representação visual do céu no momento do seu nascimento, com sua estrela-guia destacada em uma interface inspirada em Interestelar.</p>
         </div>
     </div>
 </div>
@@ -98,6 +114,32 @@
 document.getElementById('cosmic-form').addEventListener('submit', function(e) {
     // Mostrar overlay de loading
     document.getElementById('loading-overlay').classList.remove('hidden');
+});
+
+// TARS Animation
+const tarsRobot = document.querySelector('.tars-robot');
+const tarsDialogue = document.querySelector('.tars-dialogue p');
+
+const tarsQuotes = [
+    '"Humor: 75%. Análise temporal pronta para início."',
+    '"Murphy... a lei de Murphy não é uma profecia."',
+    '"Análise de coordenadas estelares... processando."',
+    '"Tempo é uma dimensão relativa, Cooper."',
+    '"Dados coletados. Navegação estelar disponível."'
+];
+
+setInterval(() => {
+    const randomQuote = tarsQuotes[Math.floor(Math.random() * tarsQuotes.length)];
+    tarsDialogue.textContent = randomQuote;
+}, 8000);
+
+// TARS hover effect
+tarsRobot.addEventListener('mouseenter', () => {
+    tarsRobot.style.transform = 'translateY(-10px) rotateY(15deg)';
+});
+
+tarsRobot.addEventListener('mouseleave', () => {
+    tarsRobot.style.transform = 'translateY(0) rotateY(0)';
 });
 </script>
 {% endblock %} 

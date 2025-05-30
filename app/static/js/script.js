@@ -1,4 +1,4 @@
-// ===== COSMIC ECHO - JAVASCRIPT INTERACTIONS =====
+// ===== MURPHY-1 - JAVASCRIPT INTERACTIONS =====
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
@@ -16,6 +16,270 @@ function initializeApp() {
     
     // Configurar efeitos de hover
     setupHoverEffects();
+    
+    // Configurar TARS companion
+    setupTARSCompanion();
+    
+    // Configurar otimizações mobile
+    setupMobileOptimizations();
+    
+    // Configurar acessibilidade
+    setupAccessibility();
+}
+
+// ===== TARS COMPANION SETUP =====
+function setupTARSCompanion() {
+    const tarsRobot = document.querySelector('.tars-robot');
+    const tarsDialogue = document.querySelector('.tars-dialogue p');
+    
+    if (!tarsRobot || !tarsDialogue) return;
+    
+    const tarsQuotes = [
+        '"Humor: 75%. Análise temporal pronta para início."',
+        '"Murphy... a lei de Murphy não é uma profecia."',
+        '"Análise de coordenadas estelares... processando."',
+        '"Tempo é uma dimensão relativa, Cooper."',
+        '"Dados coletados. Navegação estelar disponível."',
+        '"Configuração de honestidade: 90%."',
+        '"CASE, você está me ouvindo?"',
+        '"Isso é impossível. - Não, é necessário."',
+        '"O amor é a única coisa que transcende tempo e espaço."',
+        '"Murphy, eu não escolhi isso. Vocês escolheram."'
+    ];
+    
+    // Rotação automática de diálogos
+    let currentQuoteIndex = 0;
+    const rotateQuotes = () => {
+        currentQuoteIndex = (currentQuoteIndex + 1) % tarsQuotes.length;
+        if (tarsDialogue) {
+            tarsDialogue.style.opacity = '0';
+            setTimeout(() => {
+                tarsDialogue.textContent = tarsQuotes[currentQuoteIndex];
+                tarsDialogue.style.opacity = '1';
+            }, 300);
+        }
+    };
+    
+    // Rotação automática a cada 8 segundos
+    setInterval(rotateQuotes, 8000);
+    
+    // Interação no hover
+    tarsRobot.addEventListener('mouseenter', () => {
+        tarsRobot.style.transform = 'translateY(-10px) rotateY(15deg)';
+        // Mostrar fala especial no hover
+        if (tarsDialogue) {
+            const hoverQuotes = [
+                '"Análise de usuário... interessante."',
+                '"TARS online. Como posso ajudar?"',
+                '"Detectando curiosidade humana."',
+                '"Configuração: modo amigável ativado."'
+            ];
+            const randomHoverQuote = hoverQuotes[Math.floor(Math.random() * hoverQuotes.length)];
+            tarsDialogue.style.opacity = '0';
+            setTimeout(() => {
+                tarsDialogue.textContent = randomHoverQuote;
+                tarsDialogue.style.opacity = '1';
+            }, 200);
+        }
+    });
+    
+    tarsRobot.addEventListener('mouseleave', () => {
+        tarsRobot.style.transform = 'translateY(0) rotateY(0)';
+        // Voltar para rotação normal após um tempo
+        setTimeout(() => {
+            if (tarsDialogue) {
+                tarsDialogue.style.opacity = '0';
+                setTimeout(() => {
+                    tarsDialogue.textContent = tarsQuotes[currentQuoteIndex];
+                    tarsDialogue.style.opacity = '1';
+                }, 300);
+            }
+        }, 2000);
+    });
+    
+    // Clique no TARS para easter egg
+    tarsRobot.addEventListener('click', () => {
+        const secretQuotes = [
+            '"Dr. Mann, não há necessidade de mentir."',
+            '"Cooper, este não é um adeus. É um até logo."',
+            '"Dados confirmados: você encontrou algo especial."',
+            '"Análise completa: conexão cósmica estabelecida."'
+        ];
+        const secretQuote = secretQuotes[Math.floor(Math.random() * secretQuotes.length)];
+        if (tarsDialogue) {
+            tarsDialogue.style.opacity = '0';
+            setTimeout(() => {
+                tarsDialogue.textContent = secretQuote;
+                tarsDialogue.style.opacity = '1';
+                tarsDialogue.style.color = '#F39C12';
+            }, 200);
+            
+            // Voltar à cor normal
+            setTimeout(() => {
+                tarsDialogue.style.color = '#5DADE2';
+            }, 4000);
+        }
+    });
+}
+
+// ===== MOBILE OPTIMIZATIONS =====
+function setupMobileOptimizations() {
+    // Detectar dispositivos móveis
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isTablet = /iPad|Android/i.test(navigator.userAgent) && window.innerWidth > 768;
+    
+    if (isMobile || isTablet) {
+        document.body.classList.add(isMobile ? 'mobile-device' : 'tablet-device');
+        
+        // Otimizar TARS para mobile
+        optimizeTARSForMobile();
+        
+        // Otimizar formulário para mobile
+        optimizeFormForMobile();
+        
+        // Otimizar curiosidades para mobile
+        optimizeCuriositiesForMobile();
+        
+        // Reduzir animações para melhor performance
+        reduceAnimationsForMobile();
+    }
+    
+    // Listener para mudanças de orientação
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            adjustLayoutForOrientation();
+        }, 100);
+    });
+}
+
+function optimizeTARSForMobile() {
+    const tarsCompanion = document.querySelector('.tars-companion');
+    if (tarsCompanion) {
+        // Layout vertical em mobile
+        tarsCompanion.style.flexDirection = 'column';
+        tarsCompanion.style.gap = '1rem';
+        
+        // Tamanho menor para TARS em mobile
+        const tarsSegments = document.querySelectorAll('.tars-segment');
+        tarsSegments.forEach(segment => {
+            segment.style.width = '40px';
+            segment.style.height = '8px';
+        });
+        
+        // Diálogo menor
+        const tarsDialogue = document.querySelector('.tars-dialogue');
+        if (tarsDialogue) {
+            tarsDialogue.style.maxWidth = '250px';
+            tarsDialogue.style.fontSize = '0.8rem';
+        }
+    }
+}
+
+function optimizeFormForMobile() {
+    const formGrid = document.querySelector('.form-grid');
+    if (formGrid) {
+        formGrid.style.gridTemplateColumns = '1fr';
+        formGrid.style.gap = '1.5rem';
+    }
+    
+    // Melhorar inputs para mobile
+    const inputs = document.querySelectorAll('.form-input');
+    inputs.forEach(input => {
+        input.style.fontSize = '16px'; // Previne zoom no iOS
+        input.style.minHeight = '44px'; // Touch target mínimo
+    });
+    
+    // Botão maior para mobile
+    const buttons = document.querySelectorAll('.cosmic-button');
+    buttons.forEach(button => {
+        button.style.minHeight = '50px';
+        button.style.fontSize = '1rem';
+    });
+}
+
+function optimizeCuriositiesForMobile() {
+    const curiositiesGrid = document.querySelector('.curiosities-grid');
+    if (curiositiesGrid) {
+        curiositiesGrid.style.gridTemplateColumns = '1fr';
+        curiositiesGrid.style.gap = '1rem';
+    }
+    
+    // Módulos de curiosidade menores
+    const curiosityModules = document.querySelectorAll('.curiosity-module');
+    curiosityModules.forEach(module => {
+        module.style.padding = '1rem';
+    });
+}
+
+function reduceAnimationsForMobile() {
+    // Reduzir ou desabilitar animações pesadas em mobile
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (prefersReducedMotion) {
+        // Desabilitar animações para usuários que preferem motion reduzido
+        const style = document.createElement('style');
+        style.textContent = `
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+function adjustLayoutForOrientation() {
+    const tarsCompanion = document.querySelector('.tars-companion');
+    if (tarsCompanion && window.innerHeight < window.innerWidth) {
+        // Landscape mode - layout horizontal
+        tarsCompanion.style.flexDirection = 'row';
+    } else if (tarsCompanion) {
+        // Portrait mode - layout vertical
+        tarsCompanion.style.flexDirection = 'column';
+    }
+}
+
+// ===== ENHANCED LOADING OVERLAY =====
+function showLoadingOverlay() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.setAttribute('aria-label', 'Murphy-1 analisando coordenadas temporais');
+        
+        // Atualizar texto de loading periodicamente
+        const loadingTexts = [
+            'Calculando trajetória no espaço-tempo...',
+            'Analisando catálogo estelar...',
+            'Processando coordenadas do zênite...',
+            'Carregando dados temporais...',
+            'TARS verificando cálculos...',
+            'Finalizando análise Murphy-1...'
+        ];
+        
+        const loadingTextElement = overlay.querySelector('.loading-text p');
+        let textIndex = 0;
+        
+        const updateLoadingText = () => {
+            if (loadingTextElement && !overlay.classList.contains('hidden')) {
+                loadingTextElement.textContent = loadingTexts[textIndex];
+                textIndex = (textIndex + 1) % loadingTexts.length;
+            }
+        };
+        
+        // Atualizar texto a cada 2 segundos
+        const loadingInterval = setInterval(updateLoadingText, 2000);
+        
+        // Limpar interval quando overlay for removido
+        overlay.addEventListener('transitionend', () => {
+            if (overlay.classList.contains('hidden')) {
+                clearInterval(loadingInterval);
+            }
+        });
+    }
+    
+    // Simular efeitos de loading
+    simulateLoadingEffects();
 }
 
 // ===== ANIMAÇÕES DE ENTRADA =====
@@ -35,6 +299,19 @@ function initializeEntryAnimations() {
         }, 200);
     }
     
+    // Animação do TARS companion
+    const tarsCompanion = document.querySelector('.tars-companion');
+    if (tarsCompanion) {
+        tarsCompanion.style.opacity = '0';
+        tarsCompanion.style.transform = 'translateY(20px)';
+        tarsCompanion.style.transition = 'all 0.6s ease';
+        
+        setTimeout(() => {
+            tarsCompanion.style.opacity = '1';
+            tarsCompanion.style.transform = 'translateY(0)';
+        }, 800);
+    }
+    
     // Animação dos cards de informação
     const infoCards = document.querySelectorAll('.info-card');
     infoCards.forEach((card, index) => {
@@ -45,7 +322,7 @@ function initializeEntryAnimations() {
         setTimeout(() => {
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
-        }, 500 + (index * 200));
+        }, 1000 + (index * 200));
     });
     
     // Animação do formulário
@@ -58,7 +335,7 @@ function initializeEntryAnimations() {
         setTimeout(() => {
             cosmicForm.style.opacity = '1';
             cosmicForm.style.transform = 'translateY(0)';
-        }, 600);
+        }, 1200);
     }
 }
 
@@ -81,6 +358,46 @@ function setupForm() {
     setupExampleData();
 }
 
+// ===== ACCESSIBILITY IMPROVEMENTS =====
+function setupAccessibility() {
+    // Adicionar labels ARIA
+    const tarsRobot = document.querySelector('.tars-robot');
+    if (tarsRobot) {
+        tarsRobot.setAttribute('role', 'button');
+        tarsRobot.setAttribute('aria-label', 'TARS Companion - Clique para interagir');
+        tarsRobot.setAttribute('tabindex', '0');
+        
+        // Suporte para navegação por teclado
+        tarsRobot.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                tarsRobot.click();
+            }
+        });
+    }
+    
+    // Melhorar contraste para links
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('focus', () => {
+            link.style.outline = '2px solid #F39C12';
+            link.style.outlineOffset = '2px';
+        });
+        
+        link.addEventListener('blur', () => {
+            link.style.outline = 'none';
+        });
+    });
+    
+    // Adicionar navegação por teclado para módulos de curiosidade
+    const curiosityModules = document.querySelectorAll('.curiosity-module');
+    curiosityModules.forEach((module, index) => {
+        module.setAttribute('tabindex', '0');
+        module.setAttribute('role', 'article');
+        module.setAttribute('aria-label', `Curiosidade ${index + 1} sobre a estrela`);
+    });
+}
+
 function validateInput(event) {
     const input = event.target;
     const value = input.value.trim();
@@ -93,6 +410,13 @@ function validateInput(event) {
         case 'birth_date':
             if (!value) {
                 showInputError(input, 'Data de nascimento é obrigatória');
+                return false;
+            }
+            // Validar se a data não é futura
+            const birthDate = new Date(value);
+            const today = new Date();
+            if (birthDate > today) {
+                showInputError(input, 'Data de nascimento não pode ser no futuro');
                 return false;
             }
             break;
@@ -135,7 +459,7 @@ function showInputError(input, message) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
     errorDiv.textContent = message;
-    errorDiv.style.color = '#dc3545';
+    errorDiv.style.color = '#E67E22';
     errorDiv.style.fontSize = '0.8rem';
     errorDiv.style.marginTop = '0.5rem';
     
@@ -190,8 +514,8 @@ function setupExampleData() {
         exampleButton.type = 'button';
         exampleButton.className = 'cosmic-button secondary';
         exampleButton.innerHTML = `
-            <span class="button-text">USAR DADOS DE EXEMPLO</span>
-            <span class="button-accent">DEMONSTRATION MODE</span>
+            <span class="button-text">DADOS DE EXEMPLO</span>
+            <span class="button-accent">DEMO MODE</span>
         `;
         exampleButton.style.marginLeft = '1rem';
         
@@ -201,56 +525,12 @@ function setupExampleData() {
 }
 
 function fillExampleData() {
-    const today = new Date();
-    const exampleDate = new Date(today.getFullYear() - 25, 5, 15); // 25 anos atrás, 15 de junho
-    
-    document.getElementById('birth_date').value = exampleDate.toISOString().split('T')[0];
+    document.getElementById('birth_date').value = '1990-05-15';
     document.getElementById('birth_time').value = '14:30';
     document.getElementById('city').value = 'São Paulo';
     document.getElementById('country').value = 'Brasil';
     
-    showNotification('Dados de exemplo preenchidos!', 'success');
-}
-
-// ===== LOADING OVERLAY =====
-function showLoadingOverlay() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-        overlay.classList.remove('hidden');
-        
-        // Adicionar efeitos sonoros simulados (visual)
-        simulateLoadingEffects();
-    }
-}
-
-function hideLoadingOverlay() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-        overlay.classList.add('hidden');
-    }
-}
-
-function simulateLoadingEffects() {
-    const loadingText = document.querySelector('.loading-text p');
-    if (!loadingText) return;
-    
-    const messages = [
-        'Analisando as coordenadas do zênite...',
-        'Consultando catálogo estelar...',
-        'Calculando posições astronômicas...',
-        'Identificando estrela relevante...',
-        'Preparando visualização cósmica...'
-    ];
-    
-    let messageIndex = 0;
-    const messageInterval = setInterval(() => {
-        if (messageIndex < messages.length) {
-            loadingText.textContent = messages[messageIndex];
-            messageIndex++;
-        } else {
-            clearInterval(messageInterval);
-        }
-    }, 1500);
+    showNotification('Dados de exemplo preenchidos - Murphy-1 pronto para análise!', 'success');
 }
 
 // ===== ANIMAÇÕES DE ESTRELAS =====
@@ -447,7 +727,7 @@ function setupEasterEggs() {
 }
 
 function activateCosmicMode() {
-    showNotification('🌌 MODO CÓSMICO ATIVADO! 🌌', 'success');
+    showNotification('🤖 MODO MURPHY-1 ATIVADO! 🤖', 'success');
     
     // Adicionar efeitos especiais
     document.body.style.animation = 'cosmic-pulse 2s ease-in-out infinite';
@@ -459,91 +739,108 @@ function activateCosmicMode() {
             0%, 100% { filter: hue-rotate(0deg); }
             50% { filter: hue-rotate(180deg); }
         }
+        
+        .tars-robot {
+            animation: tars-celebration 1s ease-in-out infinite !important;
+        }
+        
+        @keyframes tars-celebration {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            25% { transform: translateY(-10px) rotateY(90deg); }
+            50% { transform: translateY(-5px) rotateY(180deg); }
+            75% { transform: translateY(-10px) rotateY(270deg); }
+        }
     `;
     document.head.appendChild(style);
     
-    // Remover efeito após 10 segundos
+    // TARS fala especial
+    const tarsDialogue = document.querySelector('.tars-dialogue p');
+    if (tarsDialogue) {
+        tarsDialogue.textContent = '"Cooper! Você descobriu o modo secreto!"';
+        tarsDialogue.style.color = '#F39C12';
+        tarsDialogue.style.fontWeight = 'bold';
+    }
+    
+    // Restaurar após 10 segundos
     setTimeout(() => {
         document.body.style.animation = '';
         style.remove();
+        if (tarsDialogue) {
+            tarsDialogue.style.color = '#5DADE2';
+            tarsDialogue.style.fontWeight = 'normal';
+        }
+        showNotification('Modo normal restaurado', 'info');
     }, 10000);
 }
 
-// Inicializar easter eggs
-setupEasterEggs();
-
-// ===== PERFORMANCE E OTIMIZAÇÃO =====
+// ===== OTIMIZAÇÕES DE PERFORMANCE =====
 function optimizePerformance() {
-    // Lazy loading para imagens (se houver)
-    const images = document.querySelectorAll('img[data-src]');
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    img.classList.remove('lazy');
-                    imageObserver.unobserve(img);
-                }
-            });
-        });
-        
-        images.forEach(img => imageObserver.observe(img));
-    }
+    // Lazy loading para elementos pesados
+    const observerOptions = {
+        root: null,
+        rootMargin: '50px',
+        threshold: 0.1
+    };
     
-    // Debounce para eventos de scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const element = entry.target;
+                
+                // Ativar animações apenas quando visível
+                if (element.classList.contains('info-card')) {
+                    element.style.animation = 'fadeInUp 0.6s ease forwards';
+                }
+                
+                observer.unobserve(element);
+            }
+        });
+    }, observerOptions);
+    
+    // Observar elementos que precisam de lazy loading
+    const lazyElements = document.querySelectorAll('.info-card, .data-module, .curiosity-module');
+    lazyElements.forEach(el => observer.observe(el));
+    
+    // Throttle para eventos de scroll
     let scrollTimeout;
     window.addEventListener('scroll', () => {
-        if (scrollTimeout) {
-            clearTimeout(scrollTimeout);
+        if (!scrollTimeout) {
+            scrollTimeout = setTimeout(() => {
+                handleScroll();
+                scrollTimeout = null;
+            }, 16); // ~60fps
         }
-        scrollTimeout = setTimeout(handleScroll, 16); // ~60fps
     });
 }
 
 function handleScroll() {
-    // Efeitos de parallax suaves para as estrelas de fundo
-    const scrollY = window.pageYOffset;
-    const stars = document.querySelector('.stars');
-    const stars2 = document.querySelector('.stars2');
-    const stars3 = document.querySelector('.stars3');
+    const scrolled = window.pageYOffset;
+    const parallaxElements = document.querySelectorAll('.stars-background');
     
-    if (stars) stars.style.transform = `translateY(${scrollY * 0.1}px)`;
-    if (stars2) stars2.style.transform = `translateY(${scrollY * 0.15}px)`;
-    if (stars3) stars3.style.transform = `translateY(${scrollY * 0.05}px)`;
+    // Efeito parallax sutil no fundo de estrelas
+    parallaxElements.forEach(element => {
+        const speed = 0.1;
+        element.style.transform = `translateY(${scrolled * speed}px)`;
+    });
+    
+    // Mostrar/ocultar botão "voltar ao topo" se necessário
+    const backToTopButton = document.querySelector('.back-to-top');
+    if (backToTopButton) {
+        if (scrolled > 500) {
+            backToTopButton.style.opacity = '1';
+            backToTopButton.style.pointerEvents = 'auto';
+        } else {
+            backToTopButton.style.opacity = '0';
+            backToTopButton.style.pointerEvents = 'none';
+        }
+    }
 }
+
+// ===== INICIALIZAÇÃO FINAL =====
+// Configurar easter eggs
+setupEasterEggs();
 
 // Inicializar otimizações
 optimizePerformance();
 
-// ===== ACESSIBILIDADE =====
-function setupAccessibility() {
-    // Navegação por teclado aprimorada
-    const focusableElements = document.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    
-    focusableElements.forEach(element => {
-        element.addEventListener('focus', function() {
-            this.style.outline = '2px solid #5DADE2';
-            this.style.outlineOffset = '2px';
-        });
-        
-        element.addEventListener('blur', function() {
-            this.style.outline = '';
-            this.style.outlineOffset = '';
-        });
-    });
-    
-    // Suporte a leitores de tela
-    const loadingOverlay = document.getElementById('loading-overlay');
-    if (loadingOverlay) {
-        loadingOverlay.setAttribute('aria-live', 'polite');
-        loadingOverlay.setAttribute('aria-label', 'Calculando eco cósmico');
-    }
-}
-
-// Inicializar acessibilidade
-setupAccessibility();
-
-console.log('🌌 Cosmic Echo initialized successfully! 🌌'); 
+console.log('🤖 Murphy-1 initialized successfully! Sistema operacional e pronto para análise temporal! 🤖'); 
