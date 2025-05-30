@@ -15,21 +15,8 @@ RUN python -m pip install -r requirements.txt
 # Verify key packages
 RUN python -c "import uvicorn, fastapi; print('✅ Core packages installed')"
 
-# Test app import with debug (this might reveal the issue)
-RUN echo "=== Testing app import with debug ===" && \
-    python -c "
-import sys
-print('Python path:', sys.path)
-print('Starting app import...')
-try:
-    from app.main import app
-    print('✅ App imports successfully')
-except Exception as e:
-    print('❌ App import failed:', str(e))
-    import traceback
-    traceback.print_exc()
-    sys.exit(1)
-"
+# Test app import with debug (fixed syntax)
+RUN echo "=== Testing app import with debug ===" && python -c "import sys; print('Python path:', sys.path); print('Starting app import...'); from app.main import app; print('✅ App imports successfully')"
 
 EXPOSE 8000
 
