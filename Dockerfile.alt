@@ -1,0 +1,36 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy everything
+COPY . .
+
+# Strategy 1: Try setup.py first
+RUN echo "=== Strategy 1: Using setup.py ===" && \
+    python -m pip install --upgrade pip && \
+    python -m pip install setuptools wheel && \
+    python setup.py install || echo "Setup.py failed, trying next strategy"
+
+# Strategy 2: Manual package installation
+RUN echo "=== Strategy 2: Manual installation ===" && \
+    python -m pip install fastapi==0.104.0 && \
+    python -m pip install uvicorn==0.24.0 && \
+    python -m pip install python-multipart==0.0.6 && \
+    python -m pip install jinja2==3.1.0 && \
+    python -m pip install aiofiles==23.0.0 && \
+    python -m pip install skyfield==1.47 && \
+    python -m pip install pytz==2023.3 && \
+    python -m pip install requests==2.31.0 && \
+    python -m pip install geopy==2.4.0 && \
+    python -m pip install numpy==1.24.0 && \
+    python -m pip install pandas==2.0.0 && \
+    python -m pip install matplotlib==3.7.0 && \
+    python -m pip install astropy==5.3.0 && \
+    python -m pip install scipy==1.11.0
+
+# Verify installation
+RUN python -c "import uvicorn, fastapi; print('✅ All packages installed successfully')"
+
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
