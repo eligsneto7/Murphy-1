@@ -47,11 +47,14 @@ Thumbs.db
 # Skyfield data files
 *.bsp
 *.npy
-*.txt
 finals2000A.all
 deltat.data
 deltat.preds
 Leap_Second.dat
+
+# Keep requirements.txt but ignore other txt files that are not needed
+# *.txt  <-- REMOVED THIS LINE THAT WAS CAUSING THE PROBLEM
+!requirements.txt
 
 # Logs
 *.log
