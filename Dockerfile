@@ -2,15 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+# Copy all files first
+COPY . .
 
 # Install dependencies
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
 
 # Verify uvicorn installation
 RUN python -c "import uvicorn; print('uvicorn successfully installed')"
