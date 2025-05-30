@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Erro - Cosmic Echo{% endblock %}
+
+{% block content %}
+<div class="error-section">
+    <div class="error-container">
+        <div class="error-header">
+            <h1 class="error-title">ERRO NO SISTEMA</h1>
+            <p class="error-subtitle">Falha na análise cósmica</p>
+        </div>
+        
+        <div class="error-content">
+            <div class="error-icon">⚠️</div>
+            <div class="error-message">
+                <h2>ANÁLISE INTERROMPIDA</h2>
+                <p class="error-description">{{ error }}</p>
+            </div>
+        </div>
+        
+        <div class="error-suggestions">
+            <h3>SUGESTÕES PARA RESOLUÇÃO:</h3>
+            <ul class="suggestions-list">
+                <li>Verifique se a cidade e país foram digitados corretamente</li>
+                <li>Certifique-se de que a data e hora estão no formato correto</li>
+                <li>Tente novamente em alguns momentos</li>
+                <li>Use nomes de cidades conhecidas (ex: São Paulo, Rio de Janeiro)</li>
+            </ul>
+        </div>
+        
+        <div class="error-actions">
+            <a href="/" class="cosmic-button">
+                <span class="button-text">TENTAR NOVAMENTE</span>
+                <span class="button-accent">RESTART ANALYSIS</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

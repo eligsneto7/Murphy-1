@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Cosmic Echo - Descubra Sua Estrela do Zênite{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <span class="title-main">COSMIC</span>
+            <span class="title-accent">ECHO</span>
+        </h1>
+        <p class="hero-subtitle">
+            Descubra a estrela que estava no zênite no momento exato do seu nascimento
+        </p>
+        <div class="hero-description">
+            <p>Cada momento no cosmos é único. Quando você nasceu, uma estrela específica estava perfeitamente alinhada acima de você, no zênite do céu. Descubra qual era essa estrela e conecte-se com sua história cósmica.</p>
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <div class="form-container">
+        <div class="form-header">
+            <h2>COORDENADAS TEMPORAIS E ESPACIAIS</h2>
+            <p>Insira os dados do seu nascimento para calcular seu eco cósmico</p>
+        </div>
+        
+        <form id="cosmic-form" action="/calculate" method="post" class="cosmic-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="birth_date" class="form-label">
+                        <span class="label-text">DATA DE NASCIMENTO</span>
+                        <span class="label-accent">TEMPORAL COORDINATES</span>
+                    </label>
+                    <input type="date" id="birth_date" name="birth_date" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="birth_time" class="form-label">
+                        <span class="label-text">HORA DE NASCIMENTO</span>
+                        <span class="label-accent">PRECISE MOMENT</span>
+                    </label>
+                    <input type="time" id="birth_time" name="birth_time" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="city" class="form-label">
+                        <span class="label-text">CIDADE</span>
+                        <span class="label-accent">SPATIAL COORDINATES</span>
+                    </label>
+                    <input type="text" id="city" name="city" class="form-input" placeholder="Ex: São Paulo" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="country" class="form-label">
+                        <span class="label-text">PAÍS</span>
+                        <span class="label-accent">TERRESTRIAL LOCATION</span>
+                    </label>
+                    <input type="text" id="country" name="country" class="form-input" placeholder="Ex: Brasil" required>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="cosmic-button">
+                    <span class="button-text">CALCULAR ECO CÓSMICO</span>
+                    <span class="button-accent">INITIATE STELLAR ANALYSIS</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="info-section">
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="info-icon">⭐</div>
+            <h3>PRECISÃO ASTRONÔMICA</h3>
+            <p>Utilizamos cálculos astronômicos precisos baseados no catálogo Hipparcos para determinar as coordenadas exatas do zênite no momento do seu nascimento.</p>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-icon">🌌</div>
+            <h3>CONEXÃO CÓSMICA</h3>
+            <p>Cada estrela tem uma história única. Descubra a distância, classe espectral e características da estrela que testemunhou seu primeiro momento.</p>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-icon">🔭</div>
+            <h3>VISUALIZAÇÃO IMERSIVA</h3>
+            <p>Experimente uma representação visual do céu no momento do seu nascimento, com sua estrela do zênite destacada em uma interface inspirada em Interestelar.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('cosmic-form').addEventListener('submit', function(e) {
+    // Mostrar overlay de loading
+    document.getElementById('loading-overlay').classList.remove('hidden');
+});
+</script>
+{% endblock %} 
