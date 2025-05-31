@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,8 +58,8 @@ if (BASE_DIR / 'templates').exists():
     for file in (BASE_DIR / 'templates').iterdir():
         print(f"   - {file.name}")
 
-# Temporariamente desabilitado para usar fallback
-# app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+# Re-habilitar static mount - NECESSÁRIO para url_for('static') funcionar
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 # Middleware de debug para Railway
 @app.middleware("http")
@@ -919,37 +919,6 @@ async def debug_structure():
         result["static_error"] = str(e)
     
     return result
-
-# Fallback manual para arquivos estáticos se o mount não funcionar
-@app.get("/static/{file_path:path}")
-async def serve_static_fallback(file_path: str):
-    """Fallback para servir arquivos estáticos manualmente"""
-    
-    file_full_path = BASE_DIR / "static" / file_path
-    print(f"📁 Requesting static file: {file_path}")
-    print(f"📁 Full path: {file_full_path}")
-    print(f"📁 File exists: {file_full_path.exists()}")
-    
-    if file_full_path.exists() and file_full_path.is_file():
-        # Determinar tipo MIME
-        mime_types = {
-            '.css': 'text/css',
-            '.js': 'application/javascript',
-            '.json': 'application/json',
-            '.png': 'image/png',
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.gif': 'image/gif',
-            '.svg': 'image/svg+xml',
-            '.ico': 'image/x-icon'
-        }
-        
-        file_ext = file_full_path.suffix.lower()
-        media_type = mime_types.get(file_ext, 'application/octet-stream')
-        
-        return FileResponse(str(file_full_path), media_type=media_type)
-    else:
-        raise HTTPException(status_code=404, detail=f"Static file not found: {file_path}")
 
 # Remover a execução direta para deploy
 # if __name__ == "__main__":
