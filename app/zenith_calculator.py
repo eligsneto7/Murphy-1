@@ -1,138 +1,111 @@
 """
-Zenith Calculator para Murphy-1
-Calcula estrelas próximas ao zênite baseado na localização e horário
+Zenith Calculator - Calcula a estrela no zênite para um momento específico
 """
 
 from datetime import datetime
 import pytz
 from skyfield.api import load, Topos
-from skyfield.data import hipparcos
+from app.star_data import find_nearest_named_star
 import pandas as pd
 import math
 
+# Cache global para dados astronômicos
+_ts = None
+_planets = None
+
+def _get_astronomical_data():
+    """Lazy loading dos dados astronômicos"""
+    global _ts, _planets
+    if _ts is None:
+        _ts = load.timescale()
+        _planets = load('de421.bsp')
+    return _ts, _planets
 
 def find_zenith_star(birth_date, birth_time, latitude, longitude):
     """
-    Encontra a estrela mais próxima do zênite no momento e local do nascimento
+    Encontra a estrela nomeada mais próxima do zênite no momento do nascimento
     """
     try:
-        # Converter para timezone UTC
-        if isinstance(birth_date, str):
+        # Converter strings para datetime
+        if isinstance(birth_date, str) and isinstance(birth_time, str):
             birth_datetime = datetime.strptime(f"{birth_date} {birth_time}", "%Y-%m-%d %H:%M")
         else:
             birth_datetime = datetime.combine(birth_date, birth_time)
-        
-        # Assumir UTC se não especificado
+            
+        # Adicionar timezone se não tiver
         if birth_datetime.tzinfo is None:
             birth_datetime = pytz.UTC.localize(birth_datetime)
-        
-        # Carregar dados astronômicos
-        ts = load.timescale()
-        planets = load('de421.bsp')
+            
+        # Obter dados astronômicos
+        ts, planets = _get_astronomical_data()
         earth = planets['earth']
         
-        # Criar observador na localização
-        observer = earth + Topos(latitude, longitude)
+        # Criar objeto de tempo
         t = ts.from_datetime(birth_datetime)
         
-        # Calcular zênite (Ra, Dec do observador no momento)
-        zenith_alt, zenith_az, zenith_distance = observer.at(t).observe(earth).apparent().altaz()
+        # Criar observador
+        observer = earth + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
         
-        # O zênite está em altitude 90°, azimute qualquer
-        # Calcular coordenadas do zênite
-        zenith_ra, zenith_dec, _ = observer.at(t).observe(earth).apparent().radec()
+        # Calcular tempo sideral local
+        greenwich_sidereal = t.gast
+        local_sidereal = greenwich_sidereal + longitude / 15.0
+        local_sidereal = local_sidereal % 24
         
-        # Carregar catálogo de estrelas
-        with load.open(hipparcos.URL) as f:
-            stars_df = hipparcos.load_dataframe(f)
+        # Coordenadas do zênite
+        zenith_ra = local_sidereal * 15  # Converter horas para graus
+        zenith_dec = latitude
         
-        # Filtrar estrelas brilhantes
-        bright_stars = stars_df[stars_df['magnitude'] < 6.0].dropna(subset=['ra_hours', 'dec_degrees'])
+        # Buscar estrela nomeada mais próxima
+        star_name, distance, star_data = find_nearest_named_star(zenith_ra, zenith_dec)
         
-        if bright_stars.empty:
-            # Retornar uma estrela padrão se não encontrar nenhuma
-            return {
-                'name': 'Polaris',
-                'constellation': 'Ursa Minor',
-                'ra_degrees': 37.95,
-                'dec_degrees': 89.26,
-                'magnitude': 1.97,
-                'spectral_class': 'F7Ib',
-                'distance_to_zenith': 45.0,
-                'estimated_distance_ly': 433,
-                'color': '#fff4ea',
-                'radial_velocity_description': 'Aproximando-se lentamente',
-                'curiosities': generate_star_curiosities('Polaris', 433, 1.97, 'F7Ib')
-            }
-        
-        # Converter RA de horas para graus
-        bright_stars['ra_degrees'] = bright_stars['ra_hours'] * 15
-        
-        # Calcular distância angular ao zênite para cada estrela
-        zenith_ra_deg = float(zenith_ra.hours * 15)
-        zenith_dec_deg = float(zenith_dec.degrees)
-        
-        distances = []
-        for _, star in bright_stars.iterrows():
-            dist = angular_distance(
-                zenith_ra_deg, zenith_dec_deg,
-                star['ra_degrees'], star['dec_degrees']
-            )
-            distances.append(dist)
-        
-        bright_stars['distance_to_zenith'] = distances
-        
-        # Encontrar a estrela mais próxima do zênite
-        closest_star = bright_stars.loc[bright_stars['distance_to_zenith'].idxmin()]
-        
-        # Nomes de estrelas famosas
-        star_names = {
-            32349: "Sirius",
-            30438: "Canopus", 
-            69673: "Arcturus",
-            91262: "Vega",
-            24436: "Capella",
-            37279: "Rigel",
-            37826: "Procyon",
-            25336: "Betelgeuse"
-        }
-        
-        star_name = star_names.get(closest_star.name, f"HIP {closest_star.name}")
-        
-        # Estimar propriedades da estrela
-        spectral_class = estimate_spectral_class(closest_star['magnitude'])
-        estimated_distance = estimate_distance(closest_star['magnitude'])
-        color = get_star_color(spectral_class)
-        
-        return {
+        # Montar dados da estrela com informações precisas
+        result = {
             'name': star_name,
-            'constellation': 'Desconhecida',  # Seria necessário um catálogo adicional
-            'ra_degrees': closest_star['ra_degrees'],
-            'dec_degrees': closest_star['dec_degrees'],
-            'magnitude': closest_star['magnitude'],
-            'spectral_class': spectral_class,
-            'distance_to_zenith': closest_star['distance_to_zenith'],
-            'estimated_distance_ly': estimated_distance,
-            'color': color,
-            'radial_velocity_description': generate_velocity_description(),
-            'curiosities': generate_star_curiosities(star_name, estimated_distance, closest_star['magnitude'], spectral_class)
+            'constellation': star_data['constellation'],
+            'magnitude': star_data['magnitude'],
+            'distance_ly': star_data['distance_ly'],
+            'ra_degrees': star_data['ra_degrees'],
+            'dec_degrees': star_data['dec_degrees'],
+            'distance_to_zenith': round(distance, 2),
+            'spectral_class': star_data['spectral_class'],
+            'color': get_star_color(star_data['spectral_class']),
+            'radial_velocity': generate_velocity_description(star_name),
+            'curiosities': generate_star_curiosities(
+                star_name,
+                star_data
+            ),
+            # Dados adicionais da estrela
+            'age_billion_years': star_data['age_billion_years'],
+            'temperature_k': star_data['temperature_k'],
+            'mass_solar': star_data['mass_solar'],
+            'history': star_data['history'],
+            'constellation_stars': star_data['constellation_stars']
         }
+        
+        return result
         
     except Exception as e:
-        print(f"Erro ao calcular estrela do zênite: {e}")
-        # Retornar estrela padrão em caso de erro
+        print(f"Erro no cálculo do zênite: {e}")
+        # Retornar Sirius como fallback
+        from app.star_data import NAMED_STARS
+        sirius = NAMED_STARS['Sirius']
         return {
-            'name': 'Vega',
-            'constellation': 'Lyra',
-            'ra_degrees': 279.23,
-            'dec_degrees': 38.78,
-            'magnitude': 0.03,
-            'spectral_class': 'A0V',
-            'distance_to_zenith': 30.0,
-            'estimated_distance_ly': 25,
-            'color': '#cad7ff',
-            'radial_velocity_description': 'Aproximando-se',
-            'curiosities': generate_star_curiosities('Vega', 25, 0.03, 'A0V')
+            'name': 'Sirius',
+            'constellation': sirius['constellation'],
+            'magnitude': sirius['magnitude'],
+            'distance_ly': sirius['distance_ly'],
+            'ra_degrees': sirius['ra_degrees'],
+            'dec_degrees': sirius['dec_degrees'],
+            'distance_to_zenith': 0,
+            'spectral_class': sirius['spectral_class'],
+            'color': '#E6F3FF',
+            'radial_velocity': {'description': 'Se aproximando a 5.5 km/s'},
+            'curiosities': generate_star_curiosities('Sirius', sirius),
+            'age_billion_years': sirius['age_billion_years'],
+            'temperature_k': sirius['temperature_k'],
+            'mass_solar': sirius['mass_solar'],
+            'history': sirius['history'],
+            'constellation_stars': sirius['constellation_stars']
         }
 
 
@@ -192,37 +165,37 @@ def get_star_color(spectral_class):
     return colors.get(spectral_class[0], '#ffffff')
 
 
-def generate_velocity_description():
+def generate_velocity_description(star_name):
     """Gera descrição da velocidade radial"""
     import random
     descriptions = [
-        "Aproximando-se lentamente",
-        "Afastando-se gradualmente", 
-        "Movimento perpendicular",
-        "Velocidade radial baixa",
-        "Aproximando-se rapidamente"
+        f"{star_name} está se aproximando lentamente",
+        f"{star_name} está se afastando gradualmente", 
+        f"{star_name} está se movendo perpendicularmente",
+        f"{star_name} está se movendo lentamente",
+        f"{star_name} está se aproximando rapidamente"
     ]
     return random.choice(descriptions)
 
 
 # Importar função necessária
-def generate_star_curiosities(name, distance, magnitude, spectral_class):
+def generate_star_curiosities(name, star_data):
     """Placeholder - será importado do astro_data"""
     return {
-        'age_formatted': f"{distance * 10} milhões de anos",
+        'age_formatted': f"{star_data['distance_ly'] * 10} milhões de anos",
         'birth_era': "Era Pré-Solar",
         'temporal_message': f"Esta estrela brilha há muito mais tempo que nosso Sol",
         'history': f"{name} é uma estrela fascinante com características únicas",
         'fun_facts': [
-            f"Está a {distance} anos-luz de distância",
-            f"Sua magnitude aparente é {magnitude}",
-            f"Pertence à classe espectral {spectral_class}"
+            f"Está a {star_data['distance_ly']} anos-luz de distância",
+            f"Sua magnitude aparente é {star_data['magnitude']}",
+            f"Pertence à classe espectral {star_data['spectral_class']}"
         ],
         'timeline_comparison': {
             'comparisons': [
                 f"Quando {name} nasceu, a Terra ainda não existia",
-                f"A luz que vemos hoje saiu da estrela há {distance} anos"
+                f"A luz que vemos hoje saiu da estrela há {star_data['distance_ly']} anos"
             ],
-            'era_when_light_started': f"Há {distance} anos"
+            'era_when_light_started': f"Há {star_data['distance_ly']} anos"
         }
     } 

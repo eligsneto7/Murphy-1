@@ -23,58 +23,224 @@ def generate_cosmic_message(zenith_star):
 
 
 def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class):
-    """Gera curiosidades sobre a estrela"""
-    # Calcular idade estimada (muito simplificado)
-    age_millions = distance_ly * 10  # Estimativa grosseira
+    """Gera curiosidades sobre a estrela usando dados precisos"""
+    from app.star_data import NAMED_STARS
+    
+    # Se temos dados precisos para esta estrela
+    if star_name in NAMED_STARS:
+        star_data = NAMED_STARS[star_name]
+        age_billion_years = star_data['age_billion_years']
+        real_distance = star_data['distance_ly']
+        history = star_data['history']
+        temperature = star_data['temperature_k']
+        mass = star_data['mass_solar']
+    else:
+        # Estimativas para estrelas genéricas
+        age_billion_years = estimate_age_from_spectral(spectral_class)
+        real_distance = distance_ly
+        history = f"{star_name} é uma estrela fascinante da classe {spectral_class}."
+        temperature = estimate_temperature_from_spectral(spectral_class)
+        mass = estimate_mass_from_magnitude(magnitude)
+    
+    # Calcular idade em diferentes formatos
+    age_millions = age_billion_years * 1000
+    age_years = age_billion_years * 1_000_000_000
     
     # Determinar era de nascimento
-    if age_millions > 10000:
+    if age_billion_years > 12:
         birth_era = "Era Primordial do Universo"
-    elif age_millions > 5000:
+    elif age_billion_years > 10:
         birth_era = "Era das Primeiras Galáxias"
-    elif age_millions > 1000:
+    elif age_billion_years > 8:
+        birth_era = "Era da Formação Galáctica"
+    elif age_billion_years > 5:
         birth_era = "Era Pré-Solar"
+    elif age_billion_years > 4.6:
+        birth_era = "Era Pré-Sistema Solar"
+    elif age_billion_years > 1:
+        birth_era = "Era Solar (contemporânea ao Sol)"
     else:
-        birth_era = "Era Contemporânea"
+        birth_era = "Era Moderna (estrela jovem)"
     
-    # Mensagem temporal
-    temporal_messages = [
-        f"Esta estrela brilha há {age_millions} milhões de anos",
-        f"Quando {star_name} nasceu, o universo era muito diferente",
-        f"A luz que vemos hoje começou sua jornada há {distance_ly} anos"
-    ]
+    # Mensagens temporais baseadas na idade real
+    temporal_messages = []
+    if age_billion_years < 0.1:
+        temporal_messages.append(f"{star_name} é uma estrela bebê em termos cósmicos")
+    elif age_billion_years < 1:
+        temporal_messages.append(f"{star_name} nasceu quando a vida já existia na Terra")
+    elif age_billion_years < 4.6:
+        temporal_messages.append(f"{star_name} é mais jovem que nosso Sol")
+    elif age_billion_years > 10:
+        temporal_messages.append(f"{star_name} é uma das estrelas mais antigas da galáxia")
+    else:
+        temporal_messages.append(f"{star_name} testemunhou a formação do Sistema Solar")
     
-    # História da estrela
-    histories = [
-        f"{star_name} é uma estrela fascinante com características únicas que a tornam especial no cosmos.",
-        f"Localizada a {distance_ly} anos-luz de distância, {star_name} é um farol luminoso em nossa galáxia.",
-        f"Com sua magnitude de {magnitude}, {star_name} é uma das estrelas mais notáveis do céu noturno."
-    ]
+    # Fatos interessantes baseados em dados reais
+    facts = []
     
-    # Fatos interessantes
-    facts = [
-        f"Está localizada a {distance_ly} anos-luz da Terra",
-        f"Sua magnitude aparente é {magnitude}",
-        f"Pertence à classe espectral {spectral_class}",
-        f"A luz que vemos hoje saiu da estrela há {distance_ly} anos",
-        f"É aproximadamente {age_millions} milhões de anos mais antiga que nosso Sol"
-    ]
+    # Fatos sobre distância
+    if real_distance < 20:
+        facts.append(f"É uma das 50 estrelas mais próximas da Terra")
+    elif real_distance > 1000:
+        facts.append(f"Sua luz viajou {real_distance:,.0f} anos para chegar até nós")
+    else:
+        facts.append(f"Está a {real_distance:.1f} anos-luz de distância")
+    
+    # Fatos sobre temperatura
+    if temperature:
+        if temperature > 20000:
+            facts.append(f"Com {temperature:,}K, é mais quente que um raio")
+        elif temperature > 10000:
+            facts.append(f"Sua superfície de {temperature:,}K é azul-branca")
+        elif temperature > 6000:
+            facts.append(f"Temperatura similar ao Sol: {temperature:,}K")
+        else:
+            facts.append(f"Relativamente fria para uma estrela: {temperature:,}K")
+    
+    # Fatos sobre massa
+    if mass:
+        if mass > 10:
+            facts.append(f"Com {mass:.1f} massas solares, terminará como supernova")
+        elif mass > 2:
+            facts.append(f"É {mass:.1f} vezes mais massiva que o Sol")
+        elif mass < 0.5:
+            facts.append(f"Anã vermelha que viverá trilhões de anos")
+        else:
+            facts.append(f"Massa similar ao Sol: {mass:.1f} massas solares")
+    
+    # Fatos sobre idade
+    if age_billion_years < 0.01:
+        facts.append(f"Com apenas {age_millions:.0f} milhões de anos, ainda está se formando")
+    elif age_billion_years > 10:
+        facts.append(f"Nasceu apenas {13.8 - age_billion_years:.1f} bilhões de anos após o Big Bang")
+    
+    # Comparações temporais
+    comparisons = []
+    
+    if age_billion_years > 4.6:
+        comparisons.append(f"É {age_billion_years - 4.6:.1f} bilhões de anos mais velha que o Sol")
+        comparisons.append(f"Quando {star_name} nasceu, o Sistema Solar não existia")
+    else:
+        comparisons.append(f"É {4.6 - age_billion_years:.1f} bilhões de anos mais jovem que o Sol")
+    
+    if real_distance < 100:
+        comparisons.append(f"Sua luz começou a viagem quando {calculate_historical_event(real_distance)}")
+    
+    # Era quando a luz começou
+    current_year = 2024
+    light_start_year = current_year - int(real_distance)
+    
+    if light_start_year > 1900:
+        era_light = f"em {light_start_year} (Era Moderna)"
+    elif light_start_year > 1000:
+        era_light = f"em {light_start_year} (Idade Média)"
+    elif light_start_year > 0:
+        era_light = f"em {light_start_year} d.C. (Era Clássica)"
+    elif light_start_year > -3000:
+        era_light = f"em {abs(light_start_year)} a.C. (Antigas Civilizações)"
+    else:
+        era_light = f"há {real_distance:,.0f} anos (Pré-História)"
     
     return {
-        'age_formatted': f"{age_millions} milhões de anos",
+        'age_formatted': f"{age_billion_years:.2f} bilhões de anos",
+        'age_millions': f"{age_millions:,.0f} milhões de anos",
         'birth_era': birth_era,
-        'temporal_message': random.choice(temporal_messages),
-        'history': random.choice(histories),
-        'fun_facts': random.sample(facts, min(3, len(facts))),
+        'temporal_message': temporal_messages[0],
+        'history': history,
+        'fun_facts': facts[:4],  # Limitar a 4 fatos
         'timeline_comparison': {
-            'comparisons': [
-                f"Quando {star_name} nasceu, a Terra ainda não existia",
-                f"Esta estrela testemunhou a formação do Sistema Solar",
-                f"A luz de {star_name} viajou por {distance_ly} anos para chegar até nós"
-            ],
-            'era_when_light_started': f"Há {distance_ly} anos"
-        }
+            'comparisons': comparisons,
+            'era_when_light_started': era_light,
+            'star_age_percent_of_universe': (age_billion_years / 13.8) * 100
+        },
+        'real_age_billions': age_billion_years,
+        'temperature_k': temperature,
+        'mass_solar': mass
     }
+
+def estimate_age_from_spectral(spectral_class):
+    """Estima idade baseada na classe espectral"""
+    if not spectral_class:
+        return 5.0
+    
+    spectral_type = spectral_class[0].upper()
+    
+    ages = {
+        'O': 0.003,  # 3 milhões de anos
+        'B': 0.01,   # 10 milhões de anos
+        'A': 0.5,    # 500 milhões de anos
+        'F': 3.0,    # 3 bilhões de anos
+        'G': 5.0,    # 5 bilhões de anos (tipo Sol)
+        'K': 10.0,   # 10 bilhões de anos
+        'M': 15.0    # 15 bilhões de anos (podem viver trilhões)
+    }
+    
+    return ages.get(spectral_type, 5.0)
+
+def estimate_temperature_from_spectral(spectral_class):
+    """Estima temperatura baseada na classe espectral"""
+    if not spectral_class:
+        return 5778  # Temperatura do Sol
+    
+    spectral_type = spectral_class[0].upper()
+    
+    temps = {
+        'O': 30000,
+        'B': 20000,
+        'A': 8500,
+        'F': 6500,
+        'G': 5500,
+        'K': 4000,
+        'M': 3000
+    }
+    
+    return temps.get(spectral_type, 5778)
+
+def estimate_mass_from_magnitude(magnitude):
+    """Estima massa baseada na magnitude (muito aproximado)"""
+    if magnitude < -1:
+        return 20.0
+    elif magnitude < 0:
+        return 10.0
+    elif magnitude < 1:
+        return 3.0
+    elif magnitude < 3:
+        return 1.5
+    elif magnitude < 5:
+        return 1.0
+    else:
+        return 0.5
+
+def calculate_historical_event(years_ago):
+    """Retorna evento histórico baseado em anos atrás"""
+    year = 2024 - int(years_ago)
+    
+    events = {
+        2020: "a pandemia de COVID-19 começava",
+        2001: "aconteciam os ataques de 11 de setembro",
+        1989: "caía o Muro de Berlim",
+        1969: "o homem pisava na Lua",
+        1945: "terminava a Segunda Guerra Mundial",
+        1914: "começava a Primeira Guerra Mundial",
+        1889: "era inaugurada a Torre Eiffel",
+        1492: "Colombo chegava às Américas",
+        1066: "ocorria a Batalha de Hastings",
+        476: "caía o Império Romano do Ocidente",
+        0: "nascia Cristo",
+        -3000: "surgiam as primeiras civilizações",
+        -10000: "começava a agricultura"
+    }
+    
+    # Encontrar o evento mais próximo
+    closest_year = min(events.keys(), key=lambda x: abs(x - year))
+    
+    if abs(year - closest_year) < 50:
+        return events[closest_year]
+    else:
+        if year > 0:
+            return f"estávamos no ano {year} d.C."
+        else:
+            return f"estávamos no ano {abs(year)} a.C."
 
 
 def get_astrology_data(birth_date, birth_time, latitude, longitude):
@@ -107,89 +273,174 @@ def get_astronomical_coincidences(birth_date, birth_time, latitude, longitude):
     month = birth_datetime.month
     day = birth_datetime.day
     
-    # Base de eventos astronômicos por ano (repetitivos e únicos)
+    # Base AMPLIADA de eventos astronômicos
     recurring_events = [
-        # Chuvas de meteoros
+        # Chuvas de meteoros principais
         {'date_range': [(1, 1, 1, 5)], 'event': 'Chuva de meteoros Quadrântidas', 'type': 'meteoros', 'intensity': 'intensa'},
         {'date_range': [(4, 16, 4, 25)], 'event': 'Chuva de meteoros Líridas', 'type': 'meteoros', 'intensity': 'moderada'},
-        {'date_range': [(5, 4, 5, 17)], 'event': 'Chuva de meteoros Eta Aquáridas', 'type': 'meteoros', 'intensity': 'moderada'},
+        {'date_range': [(5, 4, 5, 17)], 'event': 'Chuva de meteoros Eta Aquáridas (restos do Cometa Halley)', 'type': 'meteoros', 'intensity': 'moderada'},
         {'date_range': [(7, 17, 8, 24)], 'event': 'Chuva de meteoros Delta Aquáridas', 'type': 'meteoros', 'intensity': 'fraca'},
-        {'date_range': [(8, 11, 8, 13)], 'event': 'Chuva de meteoros Perseidas', 'type': 'meteoros', 'intensity': 'intensa'},
-        {'date_range': [(10, 21, 10, 22)], 'event': 'Chuva de meteoros Oriônidas', 'type': 'meteoros', 'intensity': 'moderada'},
+        {'date_range': [(8, 11, 8, 13)], 'event': 'Chuva de meteoros Perseidas (Lágrimas de São Lourenço)', 'type': 'meteoros', 'intensity': 'intensa'},
+        {'date_range': [(10, 8, 10, 10)], 'event': 'Chuva de meteoros Dracônidas', 'type': 'meteoros', 'intensity': 'variável'},
+        {'date_range': [(10, 21, 10, 22)], 'event': 'Chuva de meteoros Oriônidas (também do Halley)', 'type': 'meteoros', 'intensity': 'moderada'},
+        {'date_range': [(11, 5, 11, 12)], 'event': 'Chuva de meteoros Táuridas Sul', 'type': 'meteoros', 'intensity': 'fraca'},
+        {'date_range': [(11, 12, 11, 20)], 'event': 'Chuva de meteoros Táuridas Norte', 'type': 'meteoros', 'intensity': 'fraca'},
         {'date_range': [(11, 17, 11, 18)], 'event': 'Chuva de meteoros Leônidas', 'type': 'meteoros', 'intensity': 'variável'},
         {'date_range': [(12, 13, 12, 14)], 'event': 'Chuva de meteoros Gemínidas', 'type': 'meteoros', 'intensity': 'intensa'},
+        {'date_range': [(12, 22, 12, 23)], 'event': 'Chuva de meteoros Úrsidas', 'type': 'meteoros', 'intensity': 'fraca'},
         
         # Equinócios e solstícios
-        {'date_range': [(3, 19, 3, 21)], 'event': 'Equinócio de Outono (Hemisfério Sul)', 'type': 'equinócio', 'intensity': 'significativo'},
-        {'date_range': [(6, 20, 6, 22)], 'event': 'Solstício de Inverno (Hemisfério Sul)', 'type': 'solstício', 'intensity': 'significativo'},
-        {'date_range': [(9, 22, 9, 24)], 'event': 'Equinócio de Primavera (Hemisfério Sul)', 'type': 'equinócio', 'intensity': 'significativo'},
-        {'date_range': [(12, 20, 12, 22)], 'event': 'Solstício de Verão (Hemisfério Sul)', 'type': 'solstício', 'intensity': 'significativo'},
+        {'date_range': [(3, 19, 3, 21)], 'event': 'Equinócio de Outono (Hemisfério Sul) - dia e noite iguais', 'type': 'equinócio', 'intensity': 'significativo'},
+        {'date_range': [(6, 20, 6, 22)], 'event': 'Solstício de Inverno (Hemisfério Sul) - noite mais longa', 'type': 'solstício', 'intensity': 'significativo'},
+        {'date_range': [(9, 22, 9, 24)], 'event': 'Equinócio de Primavera (Hemisfério Sul) - renovação', 'type': 'equinócio', 'intensity': 'significativo'},
+        {'date_range': [(12, 20, 12, 22)], 'event': 'Solstício de Verão (Hemisfério Sul) - dia mais longo', 'type': 'solstício', 'intensity': 'significativo'},
+        
+        # Fenômenos lunares
+        {'date_range': [(1, 31, 1, 31)], 'event': 'Superlua Azul (rara lua cheia dupla no mês)', 'type': 'lunar', 'intensity': 'raro'},
+        {'date_range': [(2, 29, 2, 29)], 'event': 'nascimento em ano bissexto - dia extra do calendário', 'type': 'calendário', 'intensity': 'especial'},
+        
+        # Constelações zodiacais
+        {'date_range': [(3, 21, 4, 19)], 'event': 'Sol em Áries - início do ano astrológico', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        {'date_range': [(4, 20, 5, 20)], 'event': 'Sol em Touro - constelação do Touro celeste', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        {'date_range': [(5, 21, 6, 20)], 'event': 'Sol em Gêmeos - os gêmeos Castor e Pollux', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        {'date_range': [(6, 21, 7, 22)], 'event': 'Sol em Câncer - aglomerado da Colmeia visível', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        {'date_range': [(7, 23, 8, 22)], 'event': 'Sol em Leão - próximo a Regulus', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        {'date_range': [(8, 23, 9, 22)], 'event': 'Sol em Virgem - próximo a Spica', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        {'date_range': [(9, 23, 10, 22)], 'event': 'Sol em Libra - equilíbrio celestial', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        {'date_range': [(10, 23, 11, 21)], 'event': 'Sol em Escorpião - próximo a Antares', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        {'date_range': [(11, 22, 12, 21)], 'event': 'Sol em Sagitário - centro galáctico', 'type': 'zodíaco', 'intensity': 'astrológico'},
+        
+        # Fenômenos raros
+        {'date_range': [(2, 14, 2, 14)], 'event': 'alinhamento de Vênus e Júpiter no Dia dos Namorados', 'type': 'conjunção', 'intensity': 'romântico'},
+        {'date_range': [(5, 5, 5, 5)], 'event': 'pico da chuva Eta Aquáridas no 05/05', 'type': 'numerologia', 'intensity': 'místico'},
+        {'date_range': [(7, 7, 7, 7)], 'event': 'dia 07/07 - alinhamento numérico especial', 'type': 'numerologia', 'intensity': 'místico'},
+        {'date_range': [(8, 8, 8, 8)], 'event': 'Portal do Leão 08/08 - energia cósmica intensa', 'type': 'místico', 'intensity': 'espiritual'},
+        {'date_range': [(9, 9, 9, 9)], 'event': 'dia 09/09 - portal numerológico', 'type': 'numerologia', 'intensity': 'místico'},
+        {'date_range': [(11, 11, 11, 11)], 'event': 'Portal 11/11 - alinhamento energético', 'type': 'místico', 'intensity': 'espiritual'},
+        {'date_range': [(12, 12, 12, 12)], 'event': 'dia 12/12 - conclusão de ciclo anual', 'type': 'numerologia', 'intensity': 'místico'},
     ]
     
-    # Eventos históricos significativos por década
+    # Eventos históricos EXPANDIDOS por década
     historical_events = {
+        1940: [
+            {'year': 1945, 'month': 8, 'day': 6, 'event': 'detonação da primeira bomba atômica mudou a humanidade', 'type': 'nuclear'},
+            {'year': 1947, 'month': 7, 'day': 8, 'event': 'Incidente de Roswell despertou interesse por OVNIs', 'type': 'mistério'},
+            {'year': 1947, 'month': 10, 'day': 14, 'event': 'Chuck Yeager quebrou a barreira do som', 'type': 'aviação'},
+        ],
         1950: [
-            {'year': 1957, 'month': 10, 'day': 4, 'event': 'lançamento do Sputnik 1, primeiro satélite artificial', 'type': 'espacial'},
-            {'year': 1958, 'month': 1, 'day': 31, 'event': 'lançamento do Explorer 1, primeiro satélite americano', 'type': 'espacial'},
+            {'year': 1957, 'month': 10, 'day': 4, 'event': 'lançamento do Sputnik 1 iniciou a Era Espacial', 'type': 'espacial'},
+            {'year': 1958, 'month': 1, 'day': 31, 'event': 'lançamento do Explorer 1 descobriu os cinturões de Van Allen', 'type': 'espacial'},
+            {'year': 1959, 'month': 9, 'day': 14, 'event': 'Luna 2 foi o primeiro objeto humano a tocar a Lua', 'type': 'lunar'},
         ],
         1960: [
             {'year': 1961, 'month': 4, 'day': 12, 'event': 'Yuri Gagarin se tornou o primeiro humano no espaço', 'type': 'espacial'},
-            {'year': 1965, 'month': 3, 'day': 18, 'event': 'primeira caminhada espacial por Alexei Leonov', 'type': 'espacial'},
-            {'year': 1969, 'month': 7, 'day': 20, 'event': 'Neil Armstrong pisou na Lua pela primeira vez', 'type': 'lunar'},
+            {'year': 1962, 'month': 2, 'day': 20, 'event': 'John Glenn foi o primeiro americano a orbitar a Terra', 'type': 'espacial'},
+            {'year': 1963, 'month': 6, 'day': 16, 'event': 'Valentina Tereshkova foi a primeira mulher no espaço', 'type': 'espacial'},
+            {'year': 1965, 'month': 3, 'day': 18, 'event': 'Alexei Leonov fez a primeira caminhada espacial', 'type': 'espacial'},
+            {'year': 1967, 'month': 1, 'day': 27, 'event': 'tragédia da Apollo 1 mudou a segurança espacial', 'type': 'espacial'},
+            {'year': 1969, 'month': 7, 'day': 20, 'event': 'Neil Armstrong pisou na Lua - "Um pequeno passo..."', 'type': 'lunar'},
         ],
         1970: [
-            {'year': 1970, 'month': 4, 'day': 24, 'event': 'lançamento do primeiro satélite chinês', 'type': 'espacial'},
-            {'year': 1971, 'month': 11, 'day': 14, 'event': 'Mariner 9 se tornou a primeira sonda a orbitar Marte', 'type': 'planetário'},
-            {'year': 1977, 'month': 9, 'day': 5, 'event': 'lançamento da Voyager 1 rumo aos confins do Sistema Solar', 'type': 'espacial'},
+            {'year': 1970, 'month': 4, 'day': 13, 'event': 'explosão da Apollo 13 - "Houston, we have a problem"', 'type': 'espacial'},
+            {'year': 1971, 'month': 11, 'day': 14, 'event': 'Mariner 9 se tornou primeira sonda a orbitar Marte', 'type': 'planetário'},
+            {'year': 1973, 'month': 11, 'day': 3, 'event': 'Mariner 10 foi lançada para estudar Mercúrio', 'type': 'planetário'},
+            {'year': 1975, 'month': 7, 'day': 17, 'event': 'acoplamento Apollo-Soyuz simbolizou détente espacial', 'type': 'espacial'},
+            {'year': 1976, 'month': 7, 'day': 20, 'event': 'Viking 1 pousou em Marte procurando vida', 'type': 'planetário'},
+            {'year': 1977, 'month': 8, 'day': 20, 'event': 'lançamento da Voyager 2 para os planetas externos', 'type': 'espacial'},
+            {'year': 1977, 'month': 9, 'day': 5, 'event': 'lançamento da Voyager 1 rumo ao espaço interestelar', 'type': 'espacial'},
+            {'year': 1979, 'month': 3, 'day': 5, 'event': 'Voyager 1 descobriu vulcões ativos em Io', 'type': 'planetário'},
         ],
         1980: [
             {'year': 1981, 'month': 4, 'day': 12, 'event': 'primeiro voo do ônibus espacial Columbia', 'type': 'espacial'},
-            {'year': 1986, 'month': 1, 'day': 24, 'event': 'Voyager 2 fez seu encontro histórico com Urano', 'type': 'planetário'},
+            {'year': 1983, 'month': 6, 'day': 18, 'event': 'Sally Ride foi a primeira americana no espaço', 'type': 'espacial'},
+            {'year': 1986, 'month': 1, 'day': 24, 'event': 'Voyager 2 fez encontro histórico com Urano', 'type': 'planetário'},
+            {'year': 1986, 'month': 1, 'day': 28, 'event': 'tragédia do Challenger comoveu o mundo', 'type': 'espacial'},
             {'year': 1986, 'month': 3, 'day': 6, 'event': 'passagem do Cometa Halley próximo à Terra', 'type': 'cometa'},
+            {'year': 1987, 'month': 2, 'day': 23, 'event': 'Supernova 1987A explodiu visível a olho nu', 'type': 'supernova'},
+            {'year': 1989, 'month': 3, 'day': 13, 'event': 'tempestade solar massiva causou blackout em Quebec', 'type': 'solar'},
+            {'year': 1989, 'month': 8, 'day': 25, 'event': 'Voyager 2 chegou a Netuno', 'type': 'planetário'},
         ],
         1990: [
             {'year': 1990, 'month': 4, 'day': 24, 'event': 'lançamento do Telescópio Espacial Hubble', 'type': 'espacial'},
+            {'year': 1992, 'month': 10, 'day': 6, 'event': 'descoberta do primeiro exoplaneta confirmado', 'type': 'descoberta'},
+            {'year': 1994, 'month': 7, 'day': 16, 'event': 'Cometa Shoemaker-Levy 9 colidiu com Júpiter', 'type': 'impacto'},
             {'year': 1995, 'month': 12, 'day': 7, 'event': 'Galileo entrou em órbita de Júpiter', 'type': 'planetário'},
+            {'year': 1996, 'month': 8, 'day': 7, 'event': 'anúncio de possível vida em meteorito marciano', 'type': 'vida'},
+            {'year': 1997, 'month': 3, 'day': 23, 'event': 'Cometa Hale-Bopp no periélio - mais brilhante do século', 'type': 'cometa'},
             {'year': 1997, 'month': 7, 'day': 4, 'event': 'Mars Pathfinder pousou em Marte', 'type': 'planetário'},
+            {'year': 1998, 'month': 11, 'day': 20, 'event': 'início da construção da ISS', 'type': 'espacial'},
+            {'year': 1999, 'month': 8, 'day': 11, 'event': 'último eclipse solar total do milênio', 'type': 'eclipse'},
         ],
         2000: [
             {'year': 2001, 'month': 2, 'day': 12, 'event': 'sonda NEAR pousou no asteroide Eros', 'type': 'asteroide'},
+            {'year': 2001, 'month': 4, 'day': 28, 'event': 'Dennis Tito foi o primeiro turista espacial', 'type': 'espacial'},
+            {'year': 2003, 'month': 2, 'day': 1, 'event': 'tragédia do Columbia na reentrada', 'type': 'espacial'},
             {'year': 2003, 'month': 8, 'day': 27, 'event': 'maior aproximação de Marte em 60.000 anos', 'type': 'planetário'},
+            {'year': 2003, 'month': 10, 'day': 15, 'event': 'China lançou primeiro taikonauta Yang Liwei', 'type': 'espacial'},
+            {'year': 2004, 'month': 1, 'day': 4, 'event': 'Spirit pousou em Marte', 'type': 'planetário'},
+            {'year': 2005, 'month': 1, 'day': 14, 'event': 'Huygens pousou em Titã', 'type': 'planetário'},
+            {'year': 2006, 'month': 1, 'day': 19, 'event': 'New Horizons lançada rumo a Plutão', 'type': 'espacial'},
             {'year': 2006, 'month': 8, 'day': 24, 'event': 'Plutão foi reclassificado como planeta anão', 'type': 'planetário'},
+            {'year': 2007, 'month': 10, 'day': 24, 'event': 'Cometa Holmes teve explosão visível a olho nu', 'type': 'cometa'},
         ],
         2010: [
-            {'year': 2012, 'month': 8, 'day': 6, 'event': 'rover Curiosity pousou em Marte', 'type': 'planetário'},
-            {'year': 2015, 'month': 7, 'day': 14, 'event': 'New Horizons fez o primeiro sobrevoo de Plutão', 'type': 'planetário'},
-            {'year': 2017, 'month': 8, 'day': 21, 'event': 'Eclipse Solar Total atravessou os Estados Unidos', 'type': 'eclipse'},
-            {'year': 2019, 'month': 4, 'day': 10, 'event': 'primeira imagem de um buraco negro foi revelada', 'type': 'descoberta'},
+            {'year': 2011, 'month': 3, 'day': 18, 'event': 'MESSENGER entrou em órbita de Mercúrio', 'type': 'planetário'},
+            {'year': 2011, 'month': 7, 'day': 21, 'event': 'último voo do ônibus espacial (Atlantis)', 'type': 'espacial'},
+            {'year': 2012, 'month': 5, 'day': 20, 'event': 'eclipse solar anular formou "anel de fogo"', 'type': 'eclipse'},
+            {'year': 2012, 'month': 6, 'day': 6, 'event': 'último trânsito de Vênus do século XXI', 'type': 'trânsito'},
+            {'year': 2012, 'month': 8, 'day': 6, 'event': 'Curiosity pousou em Marte', 'type': 'planetário'},
+            {'year': 2013, 'month': 2, 'day': 15, 'event': 'meteoro de Chelyabinsk explodiu sobre a Rússia', 'type': 'meteoro'},
+            {'year': 2014, 'month': 11, 'day': 12, 'event': 'Philae pousou no cometa 67P', 'type': 'cometa'},
+            {'year': 2015, 'month': 7, 'day': 14, 'event': 'New Horizons sobrevoou Plutão', 'type': 'planetário'},
+            {'year': 2016, 'month': 2, 'day': 11, 'event': 'detecção de ondas gravitacionais confirmada', 'type': 'descoberta'},
+            {'year': 2017, 'month': 8, 'day': 21, 'event': 'Grande Eclipse Americano atravessou os EUA', 'type': 'eclipse'},
+            {'year': 2017, 'month': 10, 'day': 19, 'event': '\'Oumuamua primeiro objeto interestelar detectado', 'type': 'interestelar'},
+            {'year': 2019, 'month': 1, 'day': 3, 'event': 'Chang\'e 4 pousou no lado oculto da Lua', 'type': 'lunar'},
+            {'year': 2019, 'month': 4, 'day': 10, 'event': 'primeira imagem de buraco negro revelada', 'type': 'descoberta'},
         ],
         2020: [
-            {'year': 2020, 'month': 12, 'day': 21, 'event': 'Grande Conjunção de Júpiter e Saturno', 'type': 'conjunção'},
-            {'year': 2021, 'month': 2, 'day': 18, 'event': 'rover Perseverance pousou em Marte', 'type': 'planetário'},
-            {'year': 2022, 'month': 7, 'day': 12, 'event': 'primeiras imagens do Telescópio James Webb', 'type': 'espacial'},
+            {'year': 2020, 'month': 5, 'day': 30, 'event': 'SpaceX lançou primeiros astronautas comerciais', 'type': 'espacial'},
+            {'year': 2020, 'month': 7, 'day': 23, 'event': 'Cometa NEOWISE visível a olho nu', 'type': 'cometa'},
+            {'year': 2020, 'month': 12, 'day': 21, 'event': 'Grande Conjunção Júpiter-Saturno "Estrela de Belém"', 'type': 'conjunção'},
+            {'year': 2021, 'month': 2, 'day': 18, 'event': 'Perseverance pousou em Marte', 'type': 'planetário'},
+            {'year': 2021, 'month': 4, 'day': 19, 'event': 'Ingenuity voou em Marte - primeiro voo em outro planeta', 'type': 'planetário'},
+            {'year': 2021, 'month': 7, 'day': 11, 'event': 'Richard Branson foi ao espaço com Virgin Galactic', 'type': 'turismo'},
+            {'year': 2021, 'month': 12, 'day': 25, 'event': 'Telescópio James Webb foi lançado', 'type': 'espacial'},
+            {'year': 2022, 'month': 7, 'day': 12, 'event': 'primeiras imagens do James Webb reveladas', 'type': 'espacial'},
+            {'year': 2022, 'month': 11, 'day': 16, 'event': 'Artemis I lançada - retorno à Lua', 'type': 'lunar'},
+            {'year': 2023, 'month': 4, 'day': 20, 'event': 'Starship explodiu em primeiro voo orbital', 'type': 'espacial'},
         ]
     }
     
-    # Tempestades solares significativas
-    solar_storms = [
+    # Tempestades solares e auroras significativas
+    solar_events = [
         {'year': 1859, 'month': 9, 'day': 1, 'event': 'Evento Carrington - maior tempestade solar registrada', 'type': 'solar'},
-        {'year': 1921, 'month': 5, 'day': 15, 'event': 'Grande Tempestade Geomagnética', 'type': 'solar'},
-        {'year': 1989, 'month': 3, 'day': 13, 'event': 'tempestade solar que causou blackout em Quebec', 'type': 'solar'},
-        {'year': 2003, 'month': 10, 'day': 28, 'event': 'explosão solar X17.2, uma das maiores já registradas', 'type': 'solar'},
+        {'year': 1921, 'month': 5, 'day': 15, 'event': 'Grande Tempestade Geomagnética de 1921', 'type': 'solar'},
+        {'year': 1989, 'month': 3, 'day': 13, 'event': 'tempestade solar causou blackout em Quebec', 'type': 'solar'},
+        {'year': 2003, 'month': 10, 'day': 28, 'event': 'explosão solar X17.2 - Halloween Storm', 'type': 'solar'},
+        {'year': 2012, 'month': 7, 'day': 23, 'event': 'super tempestade solar passou perto da Terra', 'type': 'solar'},
+    ]
+    
+    # Cometas famosos
+    comet_events = [
+        {'year': 1910, 'month': 5, 'day': 19, 'event': 'passagem do Cometa Halley causou pânico mundial', 'type': 'cometa'},
+        {'year': 1965, 'month': 10, 'day': 20, 'event': 'Cometa Ikeya-Seki - mais brilhante do século XX', 'type': 'cometa'},
+        {'year': 1996, 'month': 3, 'day': 22, 'event': 'Cometa Hyakutake passou muito próximo da Terra', 'type': 'cometa'},
+        {'year': 1997, 'month': 4, 'day': 1, 'event': 'Cometa Hale-Bopp no auge - visível por 18 meses', 'type': 'cometa'},
+        {'year': 2007, 'month': 1, 'day': 12, 'event': 'Cometa McNaught - mais brilhante em 40 anos', 'type': 'cometa'},
     ]
     
     coincidences = []
     
-    # Verificar eventos recorrentes
+    # Verificar eventos recorrentes (mesma lógica anterior mas com mais eventos)
     for event in recurring_events:
         for date_range in event['date_range']:
             start_month, start_day, end_month, end_day = date_range
             
-            # Verificar se o nascimento está dentro do período
             if (month == start_month and day >= start_day) or \
                (month == end_month and day <= end_day) or \
                (start_month < month < end_month):
-                days_diff = 0  # Durante o evento
+                days_diff = 0
                 coincidences.append({
                     'event': event['event'],
                     'type': event['type'],
@@ -197,7 +448,6 @@ def get_astronomical_coincidences(birth_date, birth_time, latitude, longitude):
                     'during': True
                 })
             else:
-                # Verificar proximidade (até 7 dias antes ou depois)
                 event_start = datetime(year, start_month, start_day)
                 event_end = datetime(year, end_month, end_day)
                 
@@ -219,7 +469,7 @@ def get_astronomical_coincidences(birth_date, birth_time, latitude, longitude):
                         'during': False
                     })
     
-    # Verificar eventos históricos
+    # Verificar eventos históricos ampliados
     decade = (year // 10) * 10
     if decade in historical_events:
         for event in historical_events[decade]:
@@ -227,7 +477,7 @@ def get_astronomical_coincidences(birth_date, birth_time, latitude, longitude):
                 event_date = datetime(event['year'], event['month'], event['day'])
                 diff = (birth_datetime - event_date).days
                 
-                if -30 <= diff <= 30:  # Dentro de 30 dias
+                if -60 <= diff <= 60:  # Expandido para 2 meses
                     coincidences.append({
                         'event': event['event'],
                         'type': event['type'],
@@ -237,12 +487,12 @@ def get_astronomical_coincidences(birth_date, birth_time, latitude, longitude):
                     })
     
     # Verificar tempestades solares
-    for storm in solar_storms:
-        if abs(storm['year'] - year) <= 2:  # Dentro de 2 anos
+    for storm in solar_events:
+        if abs(storm['year'] - year) <= 2:
             storm_date = datetime(storm['year'], storm['month'], storm['day'])
             diff = (birth_datetime - storm_date).days
             
-            if -365 <= diff <= 365:  # Dentro de 1 ano
+            if -730 <= diff <= 730:  # Dentro de 2 anos
                 coincidences.append({
                     'event': storm['event'],
                     'type': storm['type'],
@@ -251,24 +501,50 @@ def get_astronomical_coincidences(birth_date, birth_time, latitude, longitude):
                     'historical': True
                 })
     
-    # Adicionar eventos astronômicos aleatórios baseados na data
-    random.seed(f"{year}{month}{day}")  # Seed consistente para a mesma data
+    # Verificar cometas
+    for comet in comet_events:
+        if abs(comet['year'] - year) <= 1:
+            comet_date = datetime(comet['year'], comet['month'], comet['day'])
+            diff = (birth_datetime - comet_date).days
+            
+            if -365 <= diff <= 365:
+                coincidences.append({
+                    'event': comet['event'],
+                    'type': comet['type'],
+                    'days_diff': diff,
+                    'during': False,
+                    'historical': True
+                })
+    
+    # Adicionar eventos astronômicos aleatórios variados
+    random.seed(f"{year}{month}{day}")
     
     random_events = [
-        'aumento incomum na atividade solar',
-        'alinhamento planetário raro',
-        'descoberta de um novo exoplaneta',
-        'passagem de um asteroide próximo à Terra',
+        'aumento incomum na atividade solar detectado',
+        'alinhamento raro de Vênus, Marte e Júpiter',
+        'descoberta de novo exoplaneta potencialmente habitável',
+        'passagem do asteroide próximo à órbita terrestre',
         'aurora boreal visível em latitudes incomuns',
-        'superlua especialmente brilhante',
-        'conjunção planetária visível a olho nu',
-        'máximo de atividade de manchas solares',
-        'descoberta de uma nova galáxia próxima',
-        'detecção de ondas gravitacionais'
+        'superlua especialmente brilhante e próxima',
+        'conjunção planetária formando triângulo celeste',
+        'máximo de manchas solares do ciclo de 11 anos',
+        'descoberta de nova galáxia anã orbitando a Via Láctea',
+        'detecção de sinal de rádio misterioso do espaço profundo',
+        'eclipse lunar penumbral sutil',
+        'chuva de meteoros esporádica inesperada',
+        'descoberta de novo cometa por astrônomo amador',
+        'ocultação de estrela brilhante pela Lua',
+        'trânsito da ISS visível a olho nu',
+        'flash de raios gama detectado de galáxia distante',
+        'descoberta de água em lua de Júpiter',
+        'formação de nova estrela em nebulosa próxima',
+        'pulsar emitindo sinais incomuns detectado',
+        'asteroide binário descoberto próximo à Terra'
     ]
     
-    if random.random() > 0.7:  # 30% de chance
-        days_offset = random.randint(-10, 10)
+    # Chance aumentada de evento aleatório
+    if random.random() > 0.4:  # 60% de chance
+        days_offset = random.randint(-15, 15)
         coincidences.append({
             'event': random.choice(random_events),
             'type': 'fenômeno',
@@ -276,33 +552,23 @@ def get_astronomical_coincidences(birth_date, birth_time, latitude, longitude):
             'during': False
         })
     
+    # Adicionar segundo evento se sortudo
+    if random.random() > 0.7:  # 30% de chance extra
+        days_offset = random.randint(-30, 30)
+        coincidences.append({
+            'event': random.choice(random_events),
+            'type': 'descoberta',
+            'days_diff': days_offset,
+            'during': False
+        })
+    
     # Ordenar por proximidade
     coincidences.sort(key=lambda x: abs(x['days_diff']))
     
-    # Pegar o mais relevante
-    if coincidences:
-        best_match = coincidences[0]
-        
-        # Formatar mensagem
-        if best_match['during']:
-            timing = "durante"
-        elif best_match['days_diff'] == 0:
-            timing = "exatamente no dia do"
-        elif best_match['days_diff'] > 0:
-            days = abs(best_match['days_diff'])
-            timing = f"{days} {'dia' if days == 1 else 'dias'} após"
-        else:
-            days = abs(best_match['days_diff'])
-            timing = f"{days} {'dia' if days == 1 else 'dias'} antes do"
-        
-        return {
-            'has_coincidence': True,
-            'event': best_match['event'],
-            'timing': timing,
-            'type': best_match['type'],
-            'is_historical': best_match.get('historical', False)
-        }
-    
-    return {
-        'has_coincidence': False
-    } 
+    # Retornar até 3 coincidências mais relevantes
+    return coincidences[:3] if coincidences else [{
+        'event': 'um período de calmaria cósmica incomum',
+        'type': 'raro',
+        'days_diff': 0,
+        'during': True
+    }] 

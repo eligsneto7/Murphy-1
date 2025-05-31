@@ -7,6 +7,7 @@ from datetime import datetime
 import pytz
 import math
 import colorsys
+import random
 
 # Variáveis globais para compartilhar com main.py
 ts = None
@@ -296,95 +297,205 @@ class ModernSkyRenderer:
         }
     
     def generate_modern_sky_data(self, zenith_ra, zenith_dec, zenith_star, birth_datetime, latitude, longitude):
-        """Gera dados para visualização moderna do céu - apenas estrelas"""
-        try:
-            # Obter as 25 estrelas mais relevantes próximas ao zênite
-            top_objects = self.get_top_celestial_objects(
-                zenith_ra, zenith_dec, birth_datetime, latitude, longitude, 25
-            )
+        """Gera dados do céu moderno com a constelação real"""
+        
+        # Estrela principal (zenith)
+        stars = [{
+            'name': zenith_star['name'],
+            'ra': zenith_star['ra_degrees'],
+            'dec': zenith_star['dec_degrees'],
+            'magnitude': zenith_star['magnitude'],
+            'isZenith': True,
+            'x': 0,  # Centro do canvas
+            'y': 0,
+            'size': self._calculate_star_size(zenith_star['magnitude']),
+            'color': zenith_star.get('color', '#ffffff')
+        }]
+        
+        # Adicionar estrelas da constelação
+        if 'constellation_stars' in zenith_star:
+            constellation_stars = zenith_star['constellation_stars']
             
-            # Garantir que a estrela do zênite esteja sempre incluída
-            zenith_star_name = zenith_star.get('name', 'Estrela do Zênite')
-            zenith_star_in_objects = any(obj['name'] == zenith_star_name for obj in top_objects)
+            # Converter coordenadas das estrelas da constelação para posições relativas
+            zenith_ra_rad = math.radians(zenith_ra)
+            zenith_dec_rad = math.radians(zenith_dec)
             
-            if not zenith_star_in_objects:
-                # Calcular cor realista para a estrela do zênite
-                zenith_color_info = self.calculate_realistic_star_color(
-                    zenith_star.get('magnitude', 5.0), 
-                    zenith_star.get('spectral_class', 'G2V')
-                )
-                
-                # Adicionar a estrela do zênite se não estiver na lista
-                zenith_star_obj = {
-                    'name': zenith_star_name,
-                    'type': 'star',
-                    'ra': zenith_ra,
-                    'dec': zenith_dec,
-                    'magnitude': zenith_star.get('magnitude', 5.0),
-                    'distance_to_zenith': 0.0,  # Por definição, está no zênite
-                    'color': zenith_color_info['hex'],
-                    'color_name': zenith_color_info['name'],
-                    'temperature': zenith_color_info['temp'],
-                    'spectral_type': zenith_star.get('spectral_class', 'G2V'),
-                    'priority': 2000,  # Prioridade máxima
-                    'brightness_factor': zenith_color_info['brightness_factor']
-                }
-                top_objects.insert(0, zenith_star_obj)  # Inserir no início
+            for const_star in constellation_stars:
+                if const_star['name'] != zenith_star['name']:  # Não duplicar a estrela principal
+                    # Calcular posição relativa à estrela do zênite
+                    ra_rad = math.radians(const_star['ra'])
+                    dec_rad = math.radians(const_star['dec'])
+                    
+                    # Projeção estereográfica simplificada
+                    delta_ra = ra_rad - zenith_ra_rad
+                    
+                    # Fator de escala para caber no canvas (ajustável)
+                    scale = 100
+                    
+                    x = scale * math.sin(delta_ra) * math.cos(dec_rad)
+                    y = scale * (math.sin(dec_rad) * math.cos(zenith_dec_rad) - 
+                               math.cos(dec_rad) * math.sin(zenith_dec_rad) * math.cos(delta_ra))
+                    
+                    stars.append({
+                        'name': const_star['name'],
+                        'ra': const_star['ra'],
+                        'dec': const_star['dec'],
+                        'magnitude': const_star['mag'],
+                        'isZenith': False,
+                        'x': x,
+                        'y': -y,  # Inverter Y para corresponder ao canvas
+                        'size': self._calculate_star_size(const_star['mag']),
+                        'color': self._get_star_color_by_magnitude(const_star['mag'])
+                    })
+        
+        # Adicionar algumas estrelas de fundo fracas para ambiente
+        random.seed(f"{zenith_ra}{zenith_dec}")  # Seed consistente
+        
+        for i in range(15):  # Menos estrelas de fundo
+            angle = random.uniform(0, 2 * math.pi)
+            distance = random.uniform(150, 280)  # Mais distantes do centro
             
-            # Preparar dados da estrela do zênite
-            zenith_data = {
-                'name': zenith_star_name,
-                'ra': zenith_ra,
-                'dec': zenith_dec,
-                'color': zenith_star.get('color', '#ffffff'),
-                'magnitude': zenith_star.get('magnitude', 5.0),
-                'spectral_class': zenith_star.get('spectral_class', 'G2V'),
-                'constellation': zenith_star.get('constellation', 'Desconhecida'),
-                'distance_ly': zenith_star.get('estimated_distance_ly', 100)
-            }
+            stars.append({
+                'name': f'background-{i}',
+                'ra': 0,
+                'dec': 0,
+                'magnitude': random.uniform(5, 7),
+                'isZenith': False,
+                'x': distance * math.cos(angle),
+                'y': distance * math.sin(angle),
+                'size': random.uniform(0.5, 1.5),
+                'color': '#666666'
+            })
+        
+        # Linhas da constelação
+        constellation_lines = []
+        
+        # Definir conexões básicas para algumas constelações conhecidas
+        constellation_patterns = {
+            'Orion': [
+                ['Betelgeuse', 'Bellatrix'],
+                ['Betelgeuse', 'Alnitak'],
+                ['Bellatrix', 'Alnilam'],
+                ['Alnitak', 'Alnilam'],
+                ['Alnilam', 'Rigel'],
+                ['Alnitak', 'Saiph'],
+                ['Rigel', 'Saiph']
+            ],
+            'Ursa Major': [
+                ['Dubhe', 'Merak'],
+                ['Merak', 'Phecda'],
+                ['Phecda', 'Megrez'],
+                ['Megrez', 'Alioth'],
+                ['Alioth', 'Mizar'],
+                ['Mizar', 'Alkaid'],
+                ['Megrez', 'Dubhe']
+            ],
+            'Leo': [
+                ['Regulus', 'Algieba'],
+                ['Algieba', 'Zosma'],
+                ['Zosma', 'Denebola'],
+                ['Denebola', 'Theta Leo'],
+                ['Theta Leo', 'Regulus'],
+                ['Algieba', 'Adhafera']
+            ],
+            'Scorpius': [
+                ['Antares', 'Tau Sco'],
+                ['Tau Sco', 'Epsilon Sco'],
+                ['Epsilon Sco', 'Mu Sco'],
+                ['Mu Sco', 'Zeta Sco'],
+                ['Antares', 'Sigma Sco'],
+                ['Sigma Sco', 'Alpha Sco']
+            ],
+            'Cygnus': [
+                ['Deneb', 'Sadr'],
+                ['Sadr', 'Gienah'],
+                ['Sadr', 'Delta Cyg'],
+                ['Sadr', 'Albireo']
+            ]
+        }
+        
+        # Se temos um padrão para esta constelação, usar
+        constellation_name = zenith_star.get('constellation', '')
+        if constellation_name in constellation_patterns:
+            pattern = constellation_patterns[constellation_name]
             
-            # Calcular posições em coordenadas de tela (projeção estereográfica simplificada)
-            screen_objects = []
-            for obj in top_objects:
-                # Converter para coordenadas relativas ao zênite
-                delta_ra = obj['ra'] - zenith_ra
-                delta_dec = obj['dec'] - zenith_dec
-                
-                # Projeção simples para visualização
-                x = delta_ra * math.cos(math.radians(zenith_dec))
-                y = delta_dec
-                
-                # Normalizar para coordenadas de tela (-1 a 1)
-                x_norm = max(-1, min(1, x / 60))  # 60 graus = borda da tela
-                y_norm = max(-1, min(1, y / 60))
-                
-                # Calcular tamanho baseado na magnitude e fator de brilho
-                base_size = self.calculate_visual_size(obj['magnitude'], obj['type'])
-                enhanced_size = base_size * (1 + obj.get('brightness_factor', 0.5) * 0.5)
-                
-                screen_objects.append({
-                    **obj,
-                    'x': x_norm,
-                    'y': y_norm,
-                    'size': enhanced_size
-                })
+            # Criar mapa de nomes para índices
+            star_indices = {star['name']: i for i, star in enumerate(stars)}
             
-            return {
-                'zenith': zenith_data,
-                'objects': screen_objects,
-                'coordinates': {
-                    'ra': zenith_ra,
-                    'dec': zenith_dec,
-                    'latitude': latitude,
-                    'longitude': longitude
-                },
-                'timestamp': birth_datetime.isoformat()
-            }
+            for connection in pattern:
+                star1_name, star2_name = connection
+                if star1_name in star_indices and star2_name in star_indices:
+                    constellation_lines.append({
+                        'from': star_indices[star1_name],
+                        'to': star_indices[star2_name]
+                    })
+        else:
+            # Conectar estrelas mais brilhantes da constelação genericamente
+            bright_stars = [i for i, star in enumerate(stars) 
+                           if star['magnitude'] < 4 and not star['name'].startswith('background')]
             
-        except Exception as e:
-            print(f"Erro ao gerar dados do céu: {e}")
-            return None
-    
+            if len(bright_stars) > 1:
+                # Conectar estrelas próximas
+                for i in range(len(bright_stars)):
+                    for j in range(i + 1, len(bright_stars)):
+                        star1 = stars[bright_stars[i]]
+                        star2 = stars[bright_stars[j]]
+                        
+                        # Calcular distância
+                        dist = math.sqrt((star1['x'] - star2['x'])**2 + (star1['y'] - star2['y'])**2)
+                        
+                        # Conectar apenas estrelas próximas
+                        if dist < 150:  # Threshold ajustável
+                            constellation_lines.append({
+                                'from': bright_stars[i],
+                                'to': bright_stars[j]
+                            })
+        
+        return {
+            'stars': stars,
+            'constellation_lines': constellation_lines,
+            'projection_info': {
+                'center_ra': zenith_ra,
+                'center_dec': zenith_dec,
+                'fov': 30,  # Campo de visão em graus
+                'rotation': self._calculate_rotation(birth_datetime, latitude, longitude)
+            },
+            'constellation_name': constellation_name,
+            'total_stars': len(stars)
+        }
+
+    def _get_star_color_by_magnitude(self, magnitude):
+        """Retorna cor baseada na magnitude"""
+        if magnitude < 0:
+            return '#E6F3FF'  # Azul muito brilhante
+        elif magnitude < 1:
+            return '#D6E7FF'  # Azul brilhante  
+        elif magnitude < 2:
+            return '#FFFFFF'  # Branco
+        elif magnitude < 3:
+            return '#FFF7E6'  # Branco-amarelado
+        elif magnitude < 4:
+            return '#FFE4B5'  # Amarelado
+        else:
+            return '#888888'  # Cinza para estrelas fracas
+
+    def _calculate_star_size(self, magnitude):
+        """Calcula tamanho baseado na magnitude"""
+        if magnitude < -4:  # Vênus no máximo brilho
+            return 30
+        elif magnitude < -2:  # Júpiter, Marte
+            return 25
+        elif magnitude < 2:  # Saturno
+            return 20
+        else:  # Urano, Netuno (mais fracos)
+            return 15
+
+    def _calculate_rotation(self, birth_datetime, latitude, longitude):
+        """Calcula rotação do céu baseada na data e localização"""
+        # Implemente a lógica para calcular a rotação do céu com base na data e localização
+        # Isso pode envolver cálculos astronômicos complexos
+        return 0  # Placeholder, implemente a lógica real
+
     def calculate_visual_size(self, magnitude, obj_type):
         """Calcula tamanho visual baseado na magnitude e tipo com proporcionalidade adequada"""
         if obj_type == 'sun':
