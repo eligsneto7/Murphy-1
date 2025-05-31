@@ -260,11 +260,13 @@
 const skyData = JSON.parse(document.getElementById('sky-data').textContent);
 
 // Verificar e corrigir estrutura dos dados
-console.log('Sky Data:', skyData);
+console.log('🔍 Sky Data:', skyData);
+console.log('🔍 Sky Data Objects:', skyData.objects);
+console.log('🔍 Sky Data Stars:', skyData.stars);
 
 // Garantir que temos a estrutura correta para o visualizador
 const visualizerData = {
-    objects: skyData.objects || [],
+    objects: skyData.objects || skyData.stars || [],
     constellation_lines: skyData.constellation_lines || [],
     constellation_name: skyData.constellation_name || 'N/A',
     zenith: {
@@ -273,7 +275,13 @@ const visualizerData = {
     }
 };
 
-console.log('Visualizer Data:', visualizerData);
+console.log('✨ Visualizer Data:', visualizerData);
+console.log('🌟 Total objects to render:', visualizerData.objects.length);
+
+// Log each object for debugging
+visualizerData.objects.forEach((obj, index) => {
+    console.log(`  ${index + 1}. ${obj.name}: mag ${obj.magnitude} at (${obj.x}, ${obj.y}) - ${obj.color}`);
+});
 
 // Variáveis globais
 let skyViewer = null;
@@ -281,14 +289,28 @@ let objectInfoPanel = null;
 
 // Inicializar visualizador moderno
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM loaded, initializing sky viewer...');
+    
     // Verificar se temos dados válidos
     if (!skyData) {
-        console.error('Dados do céu não disponíveis');
+        console.error('❌ Dados do céu não disponíveis');
+        return;
+    }
+    
+    if (!visualizerData.objects || visualizerData.objects.length === 0) {
+        console.error('❌ Nenhum objeto encontrado para renderizar');
         return;
     }
     
     // Inicializar visualizador
+    console.log('🎯 Initializing ModernSkyViewer...');
     skyViewer = initializeModernSkyViewer('modern-sky-canvas', visualizerData);
+    
+    if (skyViewer) {
+        console.log('✅ ModernSkyViewer initialized successfully');
+    } else {
+        console.error('❌ Failed to initialize ModernSkyViewer');
+    }
     
     // Configurar painel de informações
     setupInfoPanel();

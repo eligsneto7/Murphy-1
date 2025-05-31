@@ -143,6 +143,40 @@ def _generate_velocity_description(star_name):
     ]
     return random.choice(descriptions)
 
+def _get_star_color_by_magnitude(magnitude):
+    """Retorna cor baseada na magnitude com cores mais vibrantes"""
+    if magnitude < 0:
+        return '#9bb0ff'  # Azul muito brilhante
+    elif magnitude < 1:
+        return '#aabfff'  # Azul brilhante  
+    elif magnitude < 2:
+        return '#cad7ff'  # Branco-azul
+    elif magnitude < 3:
+        return '#f8f7ff'  # Branco
+    elif magnitude < 4:
+        return '#fff4ea'  # Branco-amarelo
+    elif magnitude < 5:
+        return '#ffd2a1'  # Laranja
+    else:
+        return '#ffcc6f'  # Vermelho
+
+def _estimate_spectral_type(magnitude):
+    """Estima tipo espectral baseado na magnitude"""
+    if magnitude < 0:
+        return 'O5V'
+    elif magnitude < 1:
+        return 'B2V'
+    elif magnitude < 2:
+        return 'A0V'
+    elif magnitude < 3:
+        return 'F5V'
+    elif magnitude < 4:
+        return 'G2V'
+    elif magnitude < 5:
+        return 'K0V'
+    else:
+        return 'M0V'
+
 @app.post("/test-geocode")
 async def test_geocode(
     city: str = Form(...),
@@ -191,7 +225,7 @@ async def calculate(
         }
         
         # Skip sky rendering for now to avoid the error
-        # Preparar objetos para visualização
+        # Preparar objetos para visualização - ENHANCED
         objects = [{
             'name': result['name'],
             'ra': result['ra_degrees'],
@@ -202,23 +236,33 @@ async def calculate(
             'y': 0,
             'size': 25,
             'color': '#FFD700',
-            'type': 'star'
+            'type': 'star',
+            'spectral_type': result.get('spectral_class', 'G2V')
         }]
+        
+        print(f"🌟 Main star: {result['name']} at (0, 0)")
         
         # Adicionar estrelas da constelação se disponíveis
         if 'constellation_stars' in result and len(result['constellation_stars']) > 0:
+            print(f"🌌 Adding {len(result['constellation_stars'])} constellation stars")
             for i, const_star in enumerate(result['constellation_stars']):
                 if const_star['name'] != result['name']:  # Não duplicar a estrela principal
-                    # Calcular posição relativa simples
+                    # Calcular posição relativa mais ampla
                     ra_diff = const_star['ra'] - result['ra_degrees']
                     dec_diff = const_star['dec'] - result['dec_degrees']
                     
-                    # Escala para caber no canvas
-                    scale = 50
+                    # Escala maior para melhor distribuição
+                    scale = 0.8  # Reduzido para manter estrelas no círculo
                     x = ra_diff * scale
                     y = dec_diff * scale
                     
-                    objects.append({
+                    # Garantir que as estrelas fiquem dentro do raio visível
+                    distance = (x**2 + y**2)**0.5
+                    if distance > 0.9:  # Se estiver muito longe do centro
+                        x = x * 0.9 / distance
+                        y = y * 0.9 / distance
+                    
+                    star_obj = {
                         'name': const_star['name'],
                         'ra': const_star['ra'],
                         'dec': const_star['dec'],
@@ -226,10 +270,44 @@ async def calculate(
                         'isZenith': False,
                         'x': x,
                         'y': y,
-                        'size': max(5, 20 - const_star['mag'] * 3),  # Tamanho baseado na magnitude
-                        'color': '#FFFFFF',
-                        'type': 'star'
-                    })
+                        'size': max(8, 25 - const_star['mag'] * 4),  # Tamanho baseado na magnitude
+                        'color': _get_star_color_by_magnitude(const_star['mag']),
+                        'type': 'star',
+                        'spectral_type': _estimate_spectral_type(const_star['mag'])
+                    }
+                    objects.append(star_obj)
+                    print(f"  + {const_star['name']}: mag {const_star['mag']:.1f} at ({x:.2f}, {y:.2f})")
+        
+        # Adicionar algumas estrelas de fundo mais brilhantes em padrão circular
+        import random
+        random.seed(f"{result['ra_degrees']}{result['dec_degrees']}")  # Seed consistente
+        
+        print("🎆 Adding background stars...")
+        for i in range(20):  # Mais estrelas de fundo
+            angle = random.uniform(0, 2 * math.pi)
+            distance = random.uniform(0.3, 0.85)  # Distribuição mais próxima
+            
+            x = distance * math.cos(angle)
+            y = distance * math.sin(angle)
+            
+            mag = random.uniform(3, 6)  # Magnitudes mais brilhantes
+            
+            bg_star = {
+                'name': f'HD-{random.randint(10000, 99999)}',
+                'ra': result['ra_degrees'] + x * 10,
+                'dec': result['dec_degrees'] + y * 10,
+                'magnitude': mag,
+                'isZenith': False,
+                'x': x,
+                'y': y,
+                'size': max(4, 15 - mag * 2),
+                'color': _get_star_color_by_magnitude(mag),
+                'type': 'star',
+                'spectral_type': _estimate_spectral_type(mag)
+            }
+            objects.append(bg_star)
+        
+        print(f"🔢 Total stars generated: {len(objects)}")
         
         result.update({
             'objects': objects,

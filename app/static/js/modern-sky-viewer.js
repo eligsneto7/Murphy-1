@@ -3,8 +3,17 @@
 
 class ModernSkyViewer {
     constructor(canvasId, data) {
+        console.log('🎯 ModernSkyViewer constructor called');
+        console.log('📊 Canvas ID:', canvasId);
+        console.log('📊 Data received:', data);
+        
         this.canvas = document.getElementById(canvasId);
-        if (!this.canvas) return;
+        if (!this.canvas) {
+            console.error('❌ Canvas not found:', canvasId);
+            return;
+        }
+        
+        console.log('✅ Canvas found:', this.canvas);
         
         this.ctx = this.canvas.getContext('2d', { 
             alpha: false,
@@ -12,6 +21,9 @@ class ModernSkyViewer {
         });
         
         this.data = data;
+        console.log('📊 Data assigned to this.data:', this.data);
+        console.log('📊 Objects in data:', this.data?.objects?.length || 0);
+        
         this.animationFrame = null;
         
         // Advanced rendering config
@@ -622,12 +634,24 @@ class ModernSkyViewer {
     }
     
     drawCelestialObjects() {
-        if (!this.data || !this.data.objects) return;
+        console.log('🎨 drawCelestialObjects called');
+        console.log('🎨 this.data:', this.data);
+        console.log('🎨 this.data.objects:', this.data?.objects);
+        
+        if (!this.data || !this.data.objects) {
+            console.warn('⚠️ No data or objects found to render');
+            return;
+        }
+        
+        console.log(`🎨 Rendering ${this.data.objects.length} objects`);
         
         // Sort objects by magnitude (dimmer first)
         const sortedObjects = [...this.data.objects].sort((a, b) => b.magnitude - a.magnitude);
         
-        sortedObjects.forEach(obj => {
+        console.log('🎨 Sorted objects:', sortedObjects.map(obj => `${obj.name}(${obj.magnitude})`));
+        
+        sortedObjects.forEach((obj, index) => {
+            console.log(`🎨 Drawing object ${index + 1}: ${obj.name} at (${obj.x}, ${obj.y})`);
             this.drawCelestialObject(obj);
         });
     }
@@ -636,37 +660,40 @@ class ModernSkyViewer {
             const screenPos = this.worldToScreen(obj.x, obj.y);
         const isHovered = this.state.hoveredObject === obj;
         const isSelected = this.state.selectedObject === obj;
-        const isZenithStar = obj.is_zenith || (this.data.zenith && obj.name === this.data.zenith.name);
+        const isZenithStar = obj.isZenith || obj.is_zenith || (this.data.zenith && obj.name === this.data.zenith.name);
         
-        // Calculate dynamic size
-        const baseSize = Math.max(1, 6 - obj.magnitude) * 1.5;
+        // Calculate dynamic size - INCREASED SIGNIFICANTLY for visibility
+        const baseSize = Math.max(4, 12 - obj.magnitude) * 2; // Doubled base size
         const zoomSize = baseSize * this.state.zoom;
-        const hoverScale = isHovered ? 1.3 : 1;
-        const selectedScale = isSelected ? 1.5 : 1;
-        const finalSize = zoomSize * hoverScale * selectedScale;
+        const hoverScale = isHovered ? 1.5 : 1;
+        const selectedScale = isSelected ? 2 : 1;
+        let finalSize = zoomSize * hoverScale * selectedScale;
+        
+        // Ensure minimum size for visibility
+        finalSize = Math.max(finalSize, isZenithStar ? 12 : 6);
         
         // Get star color based on spectral type
-        const starColor = this.getStarColor(obj);
+        const starColor = obj.color || this.getStarColor(obj);
         
-        // Draw star glow
-        const glowSize = finalSize * 3;
+        // Draw star glow - INCREASED glow size
+        const glowSize = finalSize * 4; // Increased multiplier for more visible glow
             const gradient = this.ctx.createRadialGradient(
                 screenPos.x, screenPos.y, 0,
                 screenPos.x, screenPos.y, glowSize
             );
             
         if (isZenithStar) {
-            // Special golden glow for zenith star
-            gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
-            gradient.addColorStop(0.3, 'rgba(255, 215, 0, 0.4)');
-            gradient.addColorStop(0.6, 'rgba(255, 215, 0, 0.2)');
+            // Special golden glow for zenith star - MORE PROMINENT
+            gradient.addColorStop(0, 'rgba(255, 215, 0, 1.0)'); // Increased opacity
+            gradient.addColorStop(0.2, 'rgba(255, 215, 0, 0.8)'); // More visible
+            gradient.addColorStop(0.6, 'rgba(255, 215, 0, 0.4)');
             gradient.addColorStop(1, 'transparent');
         } else {
-            // Normal star glow
+            // Normal star glow - ENHANCED
             const [r, g, b] = this.hexToRgb(starColor);
-            gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.8 * this.config.starGlowIntensity})`);
-            gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${0.4 * this.config.starGlowIntensity})`);
-            gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${0.2 * this.config.starGlowIntensity})`);
+            gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.9 * this.config.starGlowIntensity})`); // Increased
+            gradient.addColorStop(0.2, `rgba(${r}, ${g}, ${b}, ${0.7 * this.config.starGlowIntensity})`); // Increased
+            gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${0.3 * this.config.starGlowIntensity})`);
             gradient.addColorStop(1, 'transparent');
         }
             
@@ -675,15 +702,21 @@ class ModernSkyViewer {
             this.ctx.arc(screenPos.x, screenPos.y, glowSize, 0, Math.PI * 2);
             this.ctx.fill();
             
-        // Draw star core
+        // Draw star core - ENHANCED
         this.ctx.fillStyle = isZenithStar ? '#FFD700' : starColor;
             this.ctx.beginPath();
         this.ctx.arc(screenPos.x, screenPos.y, finalSize, 0, Math.PI * 2);
             this.ctx.fill();
+        
+        // Add bright white center for visibility
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.beginPath();
+        this.ctx.arc(screenPos.x, screenPos.y, finalSize * 0.4, 0, Math.PI * 2);
+        this.ctx.fill();
             
-        // Draw diffraction spikes for bright stars
-        if (obj.magnitude < 2 || isZenithStar) {
-            this.drawDiffractionSpikes(screenPos.x, screenPos.y, finalSize * 2, starColor);
+        // Draw diffraction spikes for ALL visible stars (not just bright ones)
+        if (obj.magnitude < 4 || isZenithStar) {
+            this.drawDiffractionSpikes(screenPos.x, screenPos.y, finalSize * 3, starColor); // Increased spike size
         }
         
         // Draw zenith star special effects
@@ -692,7 +725,7 @@ class ModernSkyViewer {
         }
         
         // Draw labels for important or hovered objects
-        if (isHovered || isSelected || obj.priority > 900 || isZenithStar) {
+        if (isHovered || isSelected || obj.magnitude < 3 || isZenithStar) {
             this.drawObjectLabel(obj, screenPos, finalSize, isZenithStar);
         }
     }
