@@ -2,6 +2,8 @@
 builder = "dockerfile"
 
 [deploy]
+# Use our Python script to handle PORT correctly
+startCommand = "python start_server.py"
 # Temporarily disable health check to avoid timeout issues
 # healthcheckPath = "/api/health"
 # healthcheckTimeout = 600
