@@ -360,15 +360,15 @@ body {
 }
 
 .hero-title {
-    font-size: 4rem;
+    font-size: 3rem;
     font-weight: 700;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
     letter-spacing: 0.1em;
 }
 
 .title-main {
     color: var(--pure-white);
-    display: block;
+    display: inline-block;
 }
 
 .title-accent {
@@ -391,6 +391,24 @@ body {
     line-height: 1.8;
     max-width: 600px;
     margin: 0 auto;
+}
+
+.hero-rose {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+    animation: rose-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes rose-glow {
+    0% { 
+        filter: drop-shadow(0 0 5px rgba(231, 76, 60, 0.5)); 
+        transform: scale(1);
+    }
+    100% { 
+        filter: drop-shadow(0 0 15px rgba(231, 76, 60, 0.8)); 
+        transform: scale(1.1);
+    }
 }
 
 /* ===== FORM SECTION ===== */
@@ -1432,11 +1450,11 @@ body {
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
     }
     
-    .title-accent {
-        font-size: 2rem;
+    .hero-rose {
+        font-size: 1.5rem;
     }
     
     /* TARS Mobile Optimizations */
@@ -1541,6 +1559,14 @@ body {
     .hero-section,
     .form-section {
         padding: 2rem 1rem;
+    }
+    
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .hero-rose {
+        font-size: 1.2rem;
     }
     
     /* TARS Extra Small Mobile */

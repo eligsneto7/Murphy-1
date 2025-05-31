@@ -354,8 +354,7 @@ function setupForm() {
     // Submissão do formulário
     form.addEventListener('submit', handleFormSubmit);
     
-    // Auto-preenchimento de exemplo (para demonstração)
-    setupExampleData();
+    // Form setup complete
 }
 
 // ===== ACCESSIBILITY IMPROVEMENTS =====
@@ -507,30 +506,11 @@ function handleFormSubmit(event) {
 }
 
 function setupExampleData() {
-    // Adicionar botão de exemplo (para demonstração)
-    const formActions = document.querySelector('.form-actions');
-    if (formActions) {
-        const exampleButton = document.createElement('button');
-        exampleButton.type = 'button';
-        exampleButton.className = 'cosmic-button secondary';
-        exampleButton.innerHTML = `
-            <span class="button-text">DADOS DE EXEMPLO</span>
-            <span class="button-accent">DEMO MODE</span>
-        `;
-        exampleButton.style.marginLeft = '1rem';
-        
-        exampleButton.addEventListener('click', fillExampleData);
-        formActions.appendChild(exampleButton);
-    }
+    // Function removed - demo button no longer needed
 }
 
 function fillExampleData() {
-    document.getElementById('birth_date').value = '1990-05-15';
-    document.getElementById('birth_time').value = '14:30';
-    document.getElementById('city').value = 'São Paulo';
-    document.getElementById('country').value = 'Brasil';
-    
-    showNotification('Dados de exemplo preenchidos - Murphy-1 pronto para análise!', 'success');
+    // Function removed - demo button no longer needed
 }
 
 // ===== ANIMAÇÕES DE ESTRELAS =====
