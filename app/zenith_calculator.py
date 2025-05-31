@@ -42,9 +42,6 @@ def load_hipparcos_data():
 def find_zenith_star(birth_date, birth_time, latitude, longitude):
     """Find the star that was at zenith at the given time and location"""
     try:
-        # Load Hipparcos data
-        df = load_hipparcos_data()
-        
         # Parse birth datetime and add UTC timezone
         birth_datetime = datetime.strptime(f"{birth_date} {birth_time}", "%Y-%m-%d %H:%M")
         # Add UTC timezone to avoid Skyfield error
@@ -72,83 +69,27 @@ def find_zenith_star(birth_date, birth_time, latitude, longitude):
         
         print(f"🔍 Zenith position: RA={zenith_ra:.2f}°, Dec={zenith_dec:.2f}°")
         
-        # First try to find the closest star in Hipparcos catalog with proper names
-        # Filter only stars with names in the dataframe
-        named_df = df[df['name'].notna() & (df['name'] != '')]
-        
-        if len(named_df) > 0:
-            # Calculate distances for all named stars
-            distances = []
-            for idx, star in named_df.iterrows():
-                distance = angular_distance(
-                    zenith_ra, zenith_dec,
-                    star['ra'] * 15,  # Hipparcos RA is in hours
-                    star['dec']
-                )
-                distances.append(distance)
-            
-            # Find the closest named star
-            min_idx = np.argmin(distances)
-            closest_hipparcos = named_df.iloc[min_idx]
-            min_distance = distances[min_idx]
-            
-            print(f"⭐ Closest Hipparcos star: {closest_hipparcos['name']} (distance: {min_distance:.2f}°)")
-        else:
-            closest_hipparcos = None
-            min_distance = float('inf')
-        
-        # Now check if this star exists in our detailed catalog
+        # Load our detailed star catalog
         from app.star_data import NAMED_STARS
         
-        # Try to find the star in our detailed catalog
+        # Find the closest star in our catalog
+        min_distance = float('inf')
         closest_star = None
         star_name = None
         
-        if closest_hipparcos is not None:
-            # Try different name formats
-            hip_name = str(closest_hipparcos['name']).strip()
-            
-            # Check exact match
-            if hip_name in NAMED_STARS:
-                closest_star = NAMED_STARS[hip_name]
-                star_name = hip_name
-            else:
-                # Try common name variations
-                name_variations = [
-                    hip_name.title(),  # Title case
-                    hip_name.upper(),  # Upper case
-                    hip_name.lower(),  # Lower case
-                    hip_name.replace(' ', ''),  # No spaces
-                ]
-                
-                for variation in name_variations:
-                    if variation in NAMED_STARS:
-                        closest_star = NAMED_STARS[variation]
-                        star_name = variation
-                        break
+        for name, star in NAMED_STARS.items():
+            distance = angular_distance(
+                zenith_ra, zenith_dec,
+                star['ra_degrees'], star['dec_degrees']
+            )
+            if distance < min_distance:
+                min_distance = distance
+                closest_star = star
+                star_name = name
         
-        # If not found in detailed catalog, search for ANY closest star in our catalog
-        if closest_star is None:
-            print("🔄 Star not in detailed catalog, searching for closest star in our database...")
-            
-            min_distance = float('inf')
-            for name, star in NAMED_STARS.items():
-                distance = angular_distance(
-                    zenith_ra, zenith_dec,
-                    star['ra_degrees'], star['dec_degrees']
-                )
-                if distance < min_distance:
-                    min_distance = distance
-                    closest_star = star
-                    star_name = name
-            
-            print(f"⭐ Found closest star in our catalog: {star_name} (distance: {min_distance:.2f}°)")
+        print(f"⭐ Found closest star: {star_name} (distance: {min_distance:.2f}°)")
         
         if closest_star:
-            # Add the star name if not already present
-            if 'name' not in closest_star:
-                closest_star['name'] = star_name
-                
             return {
                 'name': star_name,
                 'hip': closest_star.get('hip', 0),
@@ -169,11 +110,9 @@ def find_zenith_star(birth_date, birth_time, latitude, longitude):
                 'is_generic': False  # Flag indicating we have detailed data
             }
         else:
-            # Return generic star data
-            generic_name = closest_hipparcos['name'] if closest_hipparcos is not None else "Estrela Desconhecida"
-            
+            # Return generic star data if no star found (should never happen with 60 stars)
             return {
-                'name': generic_name,
+                'name': "Estrela do Zênite",
                 'hip': 0,
                 'ra_degrees': zenith_ra,  # Use zenith position
                 'dec_degrees': zenith_dec,
