@@ -1,254 +1,361 @@
 {% extends "base.html" %}
 
-{% block title %}Análise Murphy-1 - {{ data.star.name }}{% endblock %}
+{% block title %}🌟 Análise Murphy-1 ULTRA - {{ data.star.name }}{% endblock %}
 
 {% block content %}
-<div class="result-header">
-    <div class="result-nav">
-        <a href="/" class="nav-link">
-            <span>← NOVA ANÁLISE</span>
-        </a>
-        <div class="result-title">
-            <h1>ANÁLISE MURPHY-1 COMPLETA</h1>
-            <p>{{ data.birth_info.date }} • {{ data.birth_info.time }} • {{ data.birth_info.location }}</p>
+<!-- ULTRA MURPHY-1 EXPERIENCE -->
+<div class="ultra-murphy-experience">
+    
+    <!-- Hero Header com Gradiente Cósmico -->
+    <div class="cosmic-hero-header">
+        <div class="stellar-particles"></div>
+        <div class="hero-content">
+            <h1 class="ultra-title">
+                <span class="title-glow">ANÁLISE MURPHY-1</span>
+                <span class="title-ultra">ULTRA</span>
+            </h1>
+            <div class="birth-signature">
+                <p class="birth-moment">{{ data.cosmic_profile.birth_moment }}</p>
+                <p class="cosmic-alignment">{{ data.cosmic_profile.cosmic_alignment }}</p>
+                <p class="universal-signature">{{ data.cosmic_profile.universal_signature }}</p>
+            </div>
+            <div class="navigation-controls">
+                <a href="/" class="nav-quantum-button">
+                    <span>← NOVA ANÁLISE QUÂNTICA</span>
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="result-content">
-    <!-- Visualização do Céu -->
-    <div class="zenith-view-section">
-        <div class="zenith-container">
-            <h2 class="section-title">VISTA DO ZÊNITE</h2>
-            <p class="section-subtitle">Representação do espaço-tempo no momento do seu nascimento</p>
+    <!-- Visualizador Estelar -->
+    <div class="stellar-projector-section">
+        <div class="projector-frame">
+            <h2 class="section-quantum-title">🌌 PROJETOR ESTELAR MURPHY-1</h2>
+            <p class="quantum-subtitle">Visualização quântica do espaço-tempo no momento do seu nascimento</p>
             
-            <div class="zenith-display">
-                <!-- Visualizador Moderno Interativo -->
-                <div class="modern-sky-container">
-                    <canvas id="modern-sky-canvas" class="modern-sky-canvas"></canvas>
+            <div class="projector-container">
+                <div class="holographic-frame">
+                    <canvas id="modern-sky-canvas" class="quantum-canvas"></canvas>
                     
-                    <!-- Painel de Informações -->
-                    <div id="object-info-panel" class="object-info-panel hidden">
+                    <!-- Painel Holográfico de Informações -->
+                    <div id="object-info-panel" class="holographic-panel hidden">
                         <div class="panel-header">
-                            <h3 id="object-name">Objeto Selecionado</h3>
-                            <button id="close-panel" class="close-button">×</button>
+                            <h3 id="object-name">Objeto Cósmico</h3>
+                            <button id="close-panel" class="quantum-close">×</button>
                         </div>
                         <div class="panel-content">
                             <div id="object-details"></div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seções Cósmicas Expansíveis -->
+    <div class="cosmic-sections-container">
+        
+        <!-- Seção 1: Informações da Estrela Zenital -->
+        <div class="cosmic-section" data-section="star">
+            <div class="section-header" onclick="toggleCosmicSection('star')">
+                <div class="section-icon">⭐</div>
+                <h2 class="section-title">ESTRELA ZENITAL</h2>
+                <div class="section-status">{{ data.star.name }}</div>
+                <div class="expand-indicator">▼</div>
+            </div>
+            <div class="section-content" id="section-star">
+                <div class="star-identity">
+                    <h3 class="star-name-ultra">{{ data.star.name }}</h3>
+                    <p class="star-constellation">Constelação: {{ data.star.constellation }}</p>
+                    <div class="cosmic-message-frame">
+                        <p class="cosmic-message">{{ data.cosmic_message }}</p>
+                    </div>
+                </div>
+                
+                <div class="stellar-data-grid">
+                    <div class="data-quantum-module">
+                        <h4>📊 CLASSIFICAÇÃO ESPECTRAL</h4>
+                        <span class="data-ultra-value">{{ data.star.spectral_class }}</span>
+                        <p class="data-description">Tipo estelar e temperatura</p>
+                    </div>
                     
-                    <!-- Controles de Visualização -->
-                    <div class="view-controls">
-                        <div class="control-group">
-                            <!-- Removido o botão Resetar Vista -->
+                    <div class="data-quantum-module">
+                        <h4>✨ MAGNITUDE APARENTE</h4>
+                        <span class="data-ultra-value">{{ data.star.magnitude }}</span>
+                        <p class="data-description">Brilho observado da Terra</p>
+                    </div>
+                    
+                    <div class="data-quantum-module">
+                        <h4>🚀 DISTÂNCIA CÓSMICA</h4>
+                        <span class="data-ultra-value">{{ data.star.distance_ly|int }} anos-luz</span>
+                        <p class="data-description">Jornada da luz até você</p>
+                    </div>
+                    
+                    <div class="data-quantum-module">
+                        <h4>🎯 COORDENADAS CELESTES</h4>
+                        <span class="data-ultra-value">RA: {{ data.star.ra_degrees }}°</span>
+                        <span class="data-ultra-value">Dec: {{ data.star.dec_degrees }}°</span>
+                        <p class="data-description">Posição no cosmos</p>
+                    </div>
+                    
+                    <div class="data-quantum-module">
+                        <h4>📍 PROXIMIDADE ZENITAL</h4>
+                        <span class="data-ultra-value">{{ data.star.distance_to_zenith }}°</span>
+                        <p class="data-description">Distância do zênite exato</p>
+                    </div>
+                    
+                    <div class="data-quantum-module">
+                        <h4>🌍 SUAS COORDENADAS</h4>
+                        <span class="data-ultra-value">{{ data.birth_info.coordinates }}</span>
+                        <p class="data-description">Local do nascimento</p>
+                    </div>
+                </div>
+                
+                <!-- Curiosidades Estelares -->
+                <div class="stellar-curiosities">
+                    <h3>🔬 ARQUIVO TEMPORAL DA ESTRELA</h3>
+                    <div class="curiosities-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon">⏰</div>
+                            <div class="timeline-content">
+                                <h4>LINHA TEMPORAL CÓSMICA</h4>
+                                <p class="age-display">{{ data.star.curiosities.age_formatted }}</p>
+                                <p class="temporal-message">{{ data.star.curiosities.temporal_message }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-icon">📜</div>
+                            <div class="timeline-content">
+                                <h4>HISTÓRIA ESTELAR</h4>
+                                <p>{{ data.star.curiosities.history }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-icon">⚡</div>
+                            <div class="timeline-content">
+                                <h4>FATOS FASCINANTES</h4>
+                                <ul class="quantum-facts-list">
+                                    {% for fact in data.star.curiosities.fun_facts %}
+                                    <li>{{ fact }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Informações da Estrela -->
-    <div class="star-info-section">
-        <div class="star-info-container">
-            <div class="star-header">
-                <h2 class="star-name">{{ data.star.name }}</h2>
-                <p class="star-constellation">Constelação: {{ data.star.constellation }}</p>
+
+        <!-- Seção 2: Fase da Lua -->
+        <div class="cosmic-section" data-section="moon">
+            <div class="section-header" onclick="toggleCosmicSection('moon')">
+                <div class="section-icon">🌙</div>
+                <h2 class="section-title">INFLUÊNCIA LUNAR</h2>
+                <div class="section-status">{{ data.moon.phase_name }}</div>
+                <div class="expand-indicator">▼</div>
             </div>
-            
-            <div class="cosmic-message">
-                <div class="message-content">
-                    <p class="message-text">{{ data.cosmic_message }}</p>
+            <div class="section-content" id="section-moon">
+                <div class="moon-visualization">
+                    <div class="moon-phase-display">
+                        <div class="moon-disc" data-phase="{{ data.moon.phase }}">
+                            <div class="moon-surface"></div>
+                            <div class="moon-shadow"></div>
+                        </div>
+                        <div class="phase-info">
+                            <h3>{{ data.moon.phase_name }}</h3>
+                            <p class="phase-percentage">{{ data.moon.phase_percentage }}% iluminada</p>
+                        </div>
+                    </div>
+                    
+                    <div class="lunar-data-grid">
+                        <div class="lunar-module">
+                            <h4>🌙 SIGNIFICADO MÍSTICO</h4>
+                            <p>{{ data.moon.mystical_meaning }}</p>
+                        </div>
+                        
+                        <div class="lunar-module">
+                            <h4>📏 DISTÂNCIA DA TERRA</h4>
+                            <span class="lunar-value">{{ data.moon.distance_km|default(0)|int }} km</span>
+                        </div>
+                        
+                        <div class="lunar-module">
+                            <h4>📍 POSIÇÃO NO CÉU</h4>
+                            <span class="lunar-value">Alt: {{ data.moon.altitude }}° | Az: {{ data.moon.azimuth }}°</span>
+                        </div>
+                        
+                        <div class="lunar-module">
+                            <h4>🌌 CONSTELAÇÃO</h4>
+                            <span class="lunar-value">{{ data.moon.constellation }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="lunar-prophecy">
+                        <h4>🔮 ENERGIA LUNAR</h4>
+                        <p>{{ data.moon.phase_description }}</p>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Curiosidades da Estrela - Nova Seção -->
-            <div class="star-curiosities-section">
-                <h3 class="curiosities-title">🌟 ARQUIVO TEMPORAL DA ESTRELA</h3>
-                
-                <div class="curiosities-grid">
-                    <!-- Idade e Era Cósmica -->
-                    <div class="curiosity-module temporal">
-                        <div class="module-header">
-                            <h4>⏰ LINHA TEMPORAL CÓSMICA</h4>
-                        </div>
-                        <div class="module-content">
-                            <p class="age-display">{{ data.star.curiosities.age_formatted }}</p>
-                            <p class="era-birth">{{ data.star.curiosities.birth_era }}</p>
-                            <p class="temporal-message">{{ data.star.curiosities.temporal_message }}</p>
-                            
-                            <div class="timeline-comparisons">
-                                {% for comparison in data.star.curiosities.timeline_comparison.comparisons %}
-                                <p class="comparison-item">• {{ comparison }}</p>
-                                {% endfor %}
-                                <p class="light-era">Luz iniciou jornada: {{ data.star.curiosities.timeline_comparison.era_when_light_started }}</p>
+        </div>
+
+        <!-- Seção 3: Marés Cósmicas -->
+        <div class="cosmic-section" data-section="tides">
+            <div class="section-header" onclick="toggleCosmicSection('tides')">
+                <div class="section-icon">🌊</div>
+                <h2 class="section-title">MARÉS GRAVITACIONAIS</h2>
+                <div class="section-status">{{ data.tides.type }}</div>
+                <div class="expand-indicator">▼</div>
+            </div>
+            <div class="section-content" id="section-tides">
+                <div class="tidal-visualization">
+                    <div class="gravitational-forces">
+                        <h3>🌌 FORÇAS CÓSMICAS ATUANTES</h3>
+                        <div class="force-bars">
+                            <div class="force-bar">
+                                <label>Força Lunar:</label>
+                                <div class="bar-container">
+                                    <div class="bar-fill moon-force" style="width: {{ (data.tides.moon_force / 5 * 100)|round }}%"></div>
+                                    <span class="force-value">{{ data.tides.moon_force }}</span>
+                                </div>
+                            </div>
+                            <div class="force-bar">
+                                <label>Força Solar:</label>
+                                <div class="bar-container">
+                                    <div class="bar-fill sun-force" style="width: {{ (data.tides.sun_force / 5 * 100)|round }}%"></div>
+                                    <span class="force-value">{{ data.tides.sun_force }}</span>
+                                </div>
+                            </div>
+                            <div class="force-bar total">
+                                <label>Força Total:</label>
+                                <div class="bar-container">
+                                    <div class="bar-fill total-force" style="width: {{ (data.tides.total_force / 5 * 100)|round }}%"></div>
+                                    <span class="force-value">{{ data.tides.total_force }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- História da Estrela -->
-                    <div class="curiosity-module historical">
-                        <div class="module-header">
-                            <h4>📜 HISTÓRIA ESTELAR</h4>
-                        </div>
-                        <div class="module-content">
-                            <p class="star-history">{{ data.star.curiosities.history }}</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Fatos Interessantes -->
-                    <div class="curiosity-module facts">
-                        <div class="module-header">
-                            <h4>⚡ DADOS FASCINANTES</h4>
-                        </div>
-                        <div class="module-content">
-                            <ul class="fun-facts-list">
-                                {% for fact in data.star.curiosities.fun_facts %}
-                                <li class="fact-item">{{ fact }}</li>
-                                {% endfor %}
-                            </ul>
+                    <div class="tidal-influence">
+                        <h4>🧬 INFLUÊNCIA PESSOAL</h4>
+                        <p class="influence-description">{{ data.tides.personal_influence }}</p>
+                        <div class="intensity-indicator">
+                            <span class="intensity-label">Intensidade Gravitacional:</span>
+                            <span class="intensity-value {{ data.tides.gravitational_intensity|lower }}">{{ data.tides.gravitational_intensity }}</span>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Seção de Coincidências Astronômicas -->
-            {% if data.coincidences and data.coincidences.has_coincidence %}
-            <div class="cosmic-coincidence-section">
-                <h3 class="coincidence-title">🌌 COINCIDÊNCIA?</h3>
-                
-                <div class="coincidence-container">
-                    <div class="coincidence-icon">
-                        {% if data.coincidences.type == 'meteoros' %}⭐
-                        {% elif data.coincidences.type == 'eclipse' %}🌒
-                        {% elif data.coincidences.type == 'solar' %}☀️
-                        {% elif data.coincidences.type == 'lunar' %}🌙
-                        {% elif data.coincidences.type == 'planetário' %}🪐
-                        {% elif data.coincidences.type == 'espacial' %}🚀
-                        {% elif data.coincidences.type == 'cometa' %}☄️
-                        {% elif data.coincidences.type == 'conjunção' %}✨
-                        {% else %}🌠
-                        {% endif %}
-                    </div>
-                    
-                    <div class="coincidence-content">
-                        <p class="coincidence-message">
-                            Você sabia que <span class="coincidence-timing">{{ data.coincidences.timing }}</span> seu nascimento 
-                            {% if data.coincidences.is_historical %}
-                            ocorreu o {{ data.coincidences.event }}?
-                            {% else %}
-                            aconteceu a {{ data.coincidences.event }}?
-                            {% endif %}
-                        </p>
+        </div>
+
+        <!-- Seção 4: Perfil Astrológico -->
+        <div class="cosmic-section" data-section="astrology">
+            <div class="section-header" onclick="toggleCosmicSection('astrology')">
+                <div class="section-icon">♈</div>
+                <h2 class="section-title">PERFIL CÓSMICO</h2>
+                <div class="section-status">{{ data.astrology.sun_sign }}</div>
+                <div class="expand-indicator">▼</div>
+            </div>
+            <div class="section-content" id="section-astrology">
+                <div class="astrological-profile">
+                    <div class="zodiac-identity">
+                        <div class="sign-display">
+                            <h3 class="zodiac-sign">{{ data.astrology.sun_sign }}</h3>
+                            <p class="sign-description">{{ data.astrology.sun_description }}</p>
+                        </div>
                         
-                        <p class="coincidence-reflection">
-                            {% if data.coincidences.type == 'meteoros' %}
-                            Como as estrelas cadentes, você traz luz e movimento ao mundo.
-                            {% elif data.coincidences.type == 'eclipse' %}
-                            Momentos de transformação cósmica marcam sua jornada.
-                            {% elif data.coincidences.type == 'solar' %}
-                            A energia do Sol ecoa em sua natureza vibrante.
-                            {% elif data.coincidences.type == 'lunar' %}
-                            Os mistérios lunares refletem em sua intuição profunda.
-                            {% elif data.coincidences.type == 'planetário' %}
-                            Você carrega a essência exploradora dos mundos distantes.
-                            {% elif data.coincidences.type == 'espacial' %}
-                            O espírito pioneiro da exploração espacial vive em você.
-                            {% elif data.coincidences.type == 'cometa' %}
-                            Como um cometa, você deixa um rastro inesquecível por onde passa.
-                            {% elif data.coincidences.type == 'conjunção' %}
-                            Alinhamentos raros marcam destinos extraordinários.
-                            {% else %}
-                            O cosmos conspirou para tornar seu nascimento especial.
-                            {% endif %}
-                        </p>
+                        <div class="elemental-composition">
+                            <div class="element-badge {{ data.astrology.element|lower }}">
+                                <span class="element-name">{{ data.astrology.element }}</span>
+                                <span class="quality-name">{{ data.astrology.quality }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="planetary-positions">
+                        <h4>🪐 POSIÇÕES PLANETÁRIAS</h4>
+                        <div class="planets-grid">
+                            {% for planet, data_planet in data.astrology.planets.items() %}
+                            <div class="planet-item {{ 'visible' if data_planet.visible else 'hidden' }}">
+                                <span class="planet-name">{{ planet }}</span>
+                                <span class="planet-constellation">{{ data_planet.constellation }}</span>
+                                <span class="planet-visibility">{{ '👁️ Visível' if data_planet.visible else '🌑 Oculto' }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="dominant-planet">
+                            <h5>🌟 Planeta Dominante:</h5>
+                            <span class="dominant-name">{{ data.astrology.dominant_planet }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cosmic-summary">
+                        <h4>✨ RESUMO CÓSMICO</h4>
+                        <p>{{ data.astrology.astrological_summary }}</p>
                     </div>
                 </div>
             </div>
-            {% endif %}
-            
-            <div class="star-data-grid">
-                <div class="data-module">
-                    <div class="module-header">
-                        <h3>CLASSIFICAÇÃO ESPECTRAL</h3>
+        </div>
+
+        <!-- Seção 5: Eventos Estelares -->
+        <div class="cosmic-section" data-section="events">
+            <div class="section-header" onclick="toggleCosmicSection('events')">
+                <div class="section-icon">🚀</div>
+                <h2 class="section-title">EVENTOS CÓSMICOS</h2>
+                <div class="section-status">{{ data.stellar_events.historical_event.name if data.stellar_events.historical_event else 'Eventos Únicos' }}</div>
+                <div class="expand-indicator">▼</div>
+            </div>
+            <div class="section-content" id="section-events">
+                <div class="stellar-events-timeline">
+                    {% if data.stellar_events.historical_event %}
+                    <div class="historical-event">
+                        <h3>🏛️ EVENTO HISTÓRICO PRÓXIMO</h3>
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-icon">{{ data.stellar_events.historical_event.name.split()[0] }}</span>
+                                <h4>{{ data.stellar_events.historical_event.name }}</h4>
+                                <span class="event-date">{{ data.stellar_events.historical_event.date }}</span>
+                            </div>
+                            <p class="event-description">{{ data.stellar_events.historical_event.description }}</p>
+                            {% if data.stellar_events.historical_event.cosmic_connection %}
+                            <div class="cosmic-connection">
+                                <h5>🌌 CONEXÃO CÓSMICA:</h5>
+                                <p>{{ data.stellar_events.historical_event.cosmic_connection }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="module-content">
-                        <p class="data-value">{{ data.star.spectral_class }}</p>
+                    {% endif %}
+                    
+                    <div class="seasonal-energy">
+                        <h3>🌸 ENERGIA SAZONAL</h3>
+                        <div class="season-card">
+                            <p>{{ data.stellar_events.seasonal_energy }}</p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="data-module">
-                    <div class="module-header">
-                        <h3>MAGNITUDE APARENTE</h3>
-                    </div>
-                    <div class="module-content">
-                        <p class="data-value">{{ data.star.magnitude }}</p>
-                        <p class="data-description">Brilho observado da Terra</p>
-                    </div>
-                </div>
-                
-                <div class="data-module">
-                    <div class="module-header">
-                        <h3>DISTÂNCIA</h3>
-                    </div>
-                    <div class="module-content">
-                        <p class="data-value">{{ data.star.distance_ly|int }} anos-luz</p>
-                        <p class="data-description">Jornada da luz até você</p>
-                    </div>
-                </div>
-                
-                <div class="data-module">
-                    <div class="module-header">
-                        <h3>COORDENADAS CELESTES</h3>
-                    </div>
-                    <div class="module-content">
-                        <p class="data-value">RA: {{ data.star.ra_degrees }}°</p>
-                        <p class="data-value">Dec: {{ data.star.dec_degrees }}°</p>
-                    </div>
-                </div>
-                
-                <div class="data-module">
-                    <div class="module-header">
-                        <h3>PROXIMIDADE DO ZÊNITE</h3>
-                    </div>
-                    <div class="module-content">
-                        <p class="data-value">{{ data.star.distance_to_zenith }}°</p>
-                        <p class="data-description">Distância angular do zênite exato</p>
-                    </div>
-                </div>
-                
-                <div class="data-module">
-                    <div class="module-header">
-                        <h3>VELOCIDADE RADIAL</h3>
-                    </div>
-                    <div class="module-content">
-                        <p class="data-value">{{ data.star.radial_velocity_description }}</p>
-                        <p class="data-description">Movimento em relação à Terra</p>
-                    </div>
-                </div>
-                
-                <div class="data-module">
-                    <div class="module-header">
-                        <h3>SUAS COORDENADAS</h3>
-                    </div>
-                    <div class="module-content">
-                        <p class="data-value">{{ data.birth_info.coordinates }}</p>
-                        <p class="data-description">Local do seu nascimento</p>
+                    
+                    <div class="birth-year-significance">
+                        <h3>📅 SIGNIFICADO DO ANO</h3>
+                        <p>{{ data.stellar_events.birth_year_significance }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="result-actions">
-    <button onclick="window.print()" class="action-button">
-        <span>SALVAR RELATÓRIO MURPHY-1</span>
-    </button>
-    <a href="/" class="action-button secondary">
-        <span>NOVA ANÁLISE</span>
-    </a>
+    <!-- Ações Quânticas -->
+    <div class="quantum-actions">
+        <button onclick="generateUltimateReport()" class="quantum-button primary">
+            <span>🔬 GERAR RELATÓRIO ULTRA</span>
+        </button>
+        <button onclick="window.print()" class="quantum-button secondary">
+            <span>💾 SALVAR ANÁLISE</span>
+        </button>
+        <a href="/" class="quantum-button tertiary">
+            <span>🔄 NOVA ANÁLISE</span>
+        </a>
+    </div>
 </div>
 {% endblock %}
 
@@ -256,15 +363,15 @@
 <script src="/static/js/modern-sky-viewer.js"></script>
 <script type="application/json" id="sky-data">{{ result | tojson | safe }}</script>
 <script>
+// ===== ULTRA MURPHY-1 JAVASCRIPT EXPERIENCE =====
+
 // Dados do céu para o visualizador
 const skyData = JSON.parse(document.getElementById('sky-data').textContent);
 
-// Verificar e corrigir estrutura dos dados
+// Verificar estrutura dos dados
 console.log('🔍 Sky Data:', skyData);
-console.log('🔍 Sky Data Objects:', skyData.objects);
-console.log('🔍 Sky Data Stars:', skyData.stars);
 
-// Garantir que temos a estrutura correta para o visualizador
+// Garantir estrutura correta para o visualizador
 const visualizerData = {
     objects: skyData.objects || skyData.stars || [],
     constellation_lines: skyData.constellation_lines || [],
@@ -275,123 +382,224 @@ const visualizerData = {
     }
 };
 
-console.log('✨ Visualizer Data:', visualizerData);
-console.log('🌟 Total objects to render:', visualizerData.objects.length);
-
-// Log each object for debugging
-visualizerData.objects.forEach((obj, index) => {
-    console.log(`  ${index + 1}. ${obj.name}: mag ${obj.magnitude} at (${obj.x}, ${obj.y}) - ${obj.color}`);
-});
+console.log('✨ Total objects to render:', visualizerData.objects.length);
 
 // Variáveis globais
 let skyViewer = null;
 let objectInfoPanel = null;
 
-// Inicializar visualizador moderno
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM loaded, initializing sky viewer...');
+// ===== FUNÇÃO PARA ALTERNAR SEÇÕES CÓSMICAS =====
+function toggleCosmicSection(sectionId) {
+    const section = document.getElementById(`section-${sectionId}`);
+    const header = document.querySelector(`[data-section="${sectionId}"] .section-header`);
+    const indicator = header.querySelector('.expand-indicator');
+    const cosmicSection = document.querySelector(`[data-section="${sectionId}"]`);
     
-    // Verificar se temos dados válidos
-    if (!skyData) {
-        console.error('❌ Dados do céu não disponíveis');
-        return;
-    }
-    
-    if (!visualizerData.objects || visualizerData.objects.length === 0) {
-        console.error('❌ Nenhum objeto encontrado para renderizar');
-        return;
-    }
-    
-    // Inicializar visualizador
-    console.log('🎯 Initializing ModernSkyViewer...');
-    skyViewer = initializeModernSkyViewer('modern-sky-canvas', visualizerData);
-    
-    if (skyViewer) {
-        console.log('✅ ModernSkyViewer initialized successfully');
+    if (section.style.maxHeight && section.style.maxHeight !== '0px') {
+        // Fechar seção
+        section.style.maxHeight = '0px';
+        indicator.style.transform = 'rotate(0deg)';
+        cosmicSection.classList.remove('expanded');
+        
+        // Animação de colapso
+        setTimeout(() => {
+            section.style.opacity = '0';
+        }, 100);
     } else {
-        console.error('❌ Failed to initialize ModernSkyViewer');
+        // Fechar todas as outras seções primeiro
+        document.querySelectorAll('.cosmic-section').forEach(otherSection => {
+            if (otherSection !== cosmicSection) {
+                const otherContent = otherSection.querySelector('.section-content');
+                const otherIndicator = otherSection.querySelector('.expand-indicator');
+                otherContent.style.maxHeight = '0px';
+                otherIndicator.style.transform = 'rotate(0deg)';
+                otherSection.classList.remove('expanded');
+            }
+        });
+        
+        // Abrir seção selecionada
+        section.style.opacity = '1';
+        section.style.maxHeight = section.scrollHeight + 'px';
+        indicator.style.transform = 'rotate(180deg)';
+        cosmicSection.classList.add('expanded');
+        
+        // Scroll suave até a seção
+        cosmicSection.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
+        });
+        
+        // Efeitos especiais por seção
+        switch(sectionId) {
+            case 'moon':
+                animateMoonPhase();
+                break;
+            case 'tides':
+                animateTidalForces();
+                break;
+            case 'astrology':
+                animateZodiacSign();
+                break;
+            case 'events':
+                animateTimeline();
+                break;
+        }
     }
-    
-    // Configurar painel de informações
-    setupInfoPanel();
-    
-    // Configurar controles
-    setupControls();
-    
-    // Configurar eventos customizados
-    setupCustomEvents();
-});
+}
 
-function setupInfoPanel() {
-    objectInfoPanel = document.getElementById('object-info-panel');
-    const closeButton = document.getElementById('close-panel');
-    
-    closeButton.addEventListener('click', () => {
-        objectInfoPanel.classList.add('hidden');
+// ===== ANIMAÇÕES ESPECIAIS =====
+function animateMoonPhase() {
+    const moonDisc = document.querySelector('.moon-disc');
+    if (moonDisc) {
+        moonDisc.style.animation = 'moonPulse 2s ease-in-out';
+        setTimeout(() => {
+            moonDisc.style.animation = '';
+        }, 2000);
+    }
+}
+
+function animateTidalForces() {
+    const forceBars = document.querySelectorAll('.bar-fill');
+    forceBars.forEach((bar, index) => {
+        setTimeout(() => {
+            bar.style.animation = 'forceWave 1.5s ease-out';
+            setTimeout(() => {
+                bar.style.animation = '';
+            }, 1500);
+        }, index * 200);
     });
 }
 
-function setupControls() {
-    // Botão de reset
-    // resetButton.addEventListener('click', () => {
-    //     if (skyViewer) {
-    //         skyViewer.state.targetZoom = 1.0;
-    //         skyViewer.state.targetPanX = 0;
-    //         skyViewer.state.targetPanY = 0;
-    //     }
-    // });
+function animateZodiacSign() {
+    const zodiacSign = document.querySelector('.zodiac-sign');
+    if (zodiacSign) {
+        zodiacSign.style.animation = 'zodiacGlow 3s ease-in-out';
+        setTimeout(() => {
+            zodiacSign.style.animation = '';
+        }, 3000);
+    }
 }
 
-function setupCustomEvents() {
-    // Escutar evento de seleção de objeto
-    document.addEventListener('objectSelected', (event) => {
-        const obj = event.detail;
-        showObjectInfo(obj);
+function animateTimeline() {
+    const eventCards = document.querySelectorAll('.event-card, .season-card');
+    eventCards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.animation = 'cardReveal 0.8s ease-out';
+            setTimeout(() => {
+                card.style.animation = '';
+            }, 800);
+        }, index * 300);
     });
 }
 
-function showObjectInfo(obj) {
-    const nameElement = document.getElementById('object-name');
-    const detailsElement = document.getElementById('object-details');
-    
-    // Atualizar nome
-    nameElement.textContent = obj.name;
-    
-    // Criar HTML dos detalhes
-    let detailsHTML = `
-        <div class="object-detail-grid">
-            <div class="detail-item">
-                <span class="detail-label">Tipo:</span>
-                <span class="detail-value">${getObjectTypeLabel(obj.type)}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Cor:</span>
-                <span class="detail-value" style="color: ${obj.color}">
-                    <span class="color-dot" style="background-color: ${obj.color}"></span>
-                    ${obj.color_name || 'Desconhecida'}
-                </span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Magnitude:</span>
-                <span class="detail-value">${obj.magnitude ? obj.magnitude.toFixed(2) : 'N/A'}</span>
+// ===== FUNÇÃO PARA GERAR RELATÓRIO ULTRA =====
+function generateUltimateReport() {
+    // Criar overlay de geração
+    const overlay = document.createElement('div');
+    overlay.className = 'generation-overlay';
+    overlay.innerHTML = `
+        <div class="generation-content">
+            <div class="quantum-loader"></div>
+            <h3>GERANDO RELATÓRIO ULTRA MURPHY-1</h3>
+            <p>Compilando dados quânticos do cosmos...</p>
+            <div class="progress-quantum">
+                <div class="progress-fill"></div>
             </div>
         </div>
     `;
     
-    detailsElement.innerHTML = detailsHTML;
+    document.body.appendChild(overlay);
     
-    // Mostrar painel
+    // Simular processo de geração
+    setTimeout(() => {
+        window.print();
+        document.body.removeChild(overlay);
+    }, 3000);
+}
+
+// ===== INICIALIZAÇÃO =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 ULTRA Murphy-1 initializing...');
+    
+    // Inicializar visualizador
+    if (visualizerData.objects && visualizerData.objects.length > 0) {
+        skyViewer = initializeModernSkyViewer('modern-sky-canvas', visualizerData);
+        console.log('✅ Sky viewer initialized');
+    }
+    
+    // Configurar painel holográfico
+    setupHolographicPanel();
+    
+    // Inicializar efeitos de partículas
+    initStellarParticles();
+    
+    // Auto-abrir primeira seção após delay
+    setTimeout(() => {
+        toggleCosmicSection('star');
+    }, 1000);
+});
+
+function setupHolographicPanel() {
+    objectInfoPanel = document.getElementById('object-info-panel');
+    const closeButton = document.getElementById('close-panel');
+    
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            objectInfoPanel.classList.add('hidden');
+        });
+    }
+    
+    // Escutar eventos de seleção
+    document.addEventListener('objectSelected', (event) => {
+        const obj = event.detail;
+        showHolographicInfo(obj);
+    });
+}
+
+function showHolographicInfo(obj) {
+    const nameElement = document.getElementById('object-name');
+    const detailsElement = document.getElementById('object-details');
+    
+    if (nameElement) nameElement.textContent = obj.name;
+    
+    if (detailsElement) {
+        detailsElement.innerHTML = `
+            <div class="holographic-details">
+                <div class="detail-quantum-item">
+                    <span class="detail-label">Tipo:</span>
+                    <span class="detail-value">${obj.type === 'star' ? 'Estrela' : 'Objeto Celeste'}</span>
+                </div>
+                <div class="detail-quantum-item">
+                    <span class="detail-label">Magnitude:</span>
+                    <span class="detail-value">${obj.magnitude ? obj.magnitude.toFixed(2) : 'N/A'}</span>
+                </div>
+                <div class="detail-quantum-item">
+                    <span class="detail-label">Cor Espectral:</span>
+                    <span class="detail-value" style="color: ${obj.color}">
+                        <span class="quantum-color-dot" style="background: ${obj.color}"></span>
+                        ${obj.color}
+                    </span>
+                </div>
+            </div>
+        `;
+    }
+    
     objectInfoPanel.classList.remove('hidden');
 }
 
-function getObjectTypeLabel(type) {
-    const typeLabels = {
-        'star': 'Estrela',
-        'planet': 'Planeta',
-        'moon': 'Lua',
-        'zenith': 'Estrela Zenital'
-    };
-    return typeLabels[type] || 'Objeto Celeste';
+function initStellarParticles() {
+    const particlesContainer = document.querySelector('.stellar-particles');
+    if (!particlesContainer) return;
+    
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'stellar-particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        particlesContainer.appendChild(particle);
+    }
 }
 </script>
 {% endblock %}

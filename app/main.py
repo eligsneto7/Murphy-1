@@ -6,7 +6,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from app.astro_data import (
-    get_astronomical_coincidences
+    get_astronomical_coincidences,
+    calculate_moon_phase,
+    calculate_tidal_influence,
+    calculate_astrological_profile,
+    calculate_stellar_events
 )
 from app.modern_sky_renderer import ModernSkyRenderer
 from app.zenith_calculator import find_zenith_star, load_hipparcos_data
@@ -309,12 +313,36 @@ async def calculate(
         
         print(f"🔢 Total stars generated: {len(objects)}")
         
+        # ===== CÁLCULOS ASTRONÔMICOS AVANÇADOS ULTRATHINK =====
+        print("🌟 Calculating advanced astronomical data...")
+        
+        # Calcular fase da lua
+        moon_data = calculate_moon_phase(birth_date, birth_time, latitude, longitude)
+        print(f"🌙 Moon phase: {moon_data['phase_name']}")
+        
+        # Calcular influência das marés
+        tidal_data = calculate_tidal_influence(birth_date, birth_time, latitude, longitude)
+        print(f"🌊 Tidal influence: {tidal_data['type']}")
+        
+        # Calcular perfil astrológico
+        astro_data = calculate_astrological_profile(birth_date, birth_time, latitude, longitude)
+        print(f"♈ Astrological sign: {astro_data['sun_sign']}")
+        
+        # Calcular eventos estelares
+        stellar_events = calculate_stellar_events(birth_date, birth_time)
+        print(f"🚀 Stellar events calculated")
+        
         result.update({
             'objects': objects,
             'stars': objects,  # Mantendo também para compatibilidade
             'constellation_lines': [],
             'constellation_name': result.get('constellation', 'N/A'),
-            'total_stars': len(objects)
+            'total_stars': len(objects),
+            # NOVOS DADOS ASTRONÔMICOS AVANÇADOS
+            'moon_data': moon_data,
+            'tidal_data': tidal_data,
+            'astro_data': astro_data,
+            'stellar_events': stellar_events
         })
         
         return templates.TemplateResponse(
@@ -358,7 +386,18 @@ async def calculate(
                         "coordinates": f"{latitude:.4f}°, {longitude:.4f}°"
                     },
                     "cosmic_message": f"No momento do seu nascimento, {result['name']} estava no zênite, brilhando diretamente sobre você. Esta estrela da constelação de {result.get('constellation', 'N/A')} será sua companheira cósmica eterna.",
-                    "coincidences": {"has_coincidence": False}
+                    "coincidences": {"has_coincidence": False},
+                    # ===== NOVOS DADOS ASTRONÔMICOS ULTRATHINK =====
+                    "moon": moon_data,
+                    "tides": tidal_data,
+                    "astrology": astro_data,
+                    "stellar_events": stellar_events,
+                    # Dados adicionais para experiência WOW
+                    "cosmic_profile": {
+                        "birth_moment": f"No exato momento do seu nascimento em {birth_date} às {birth_time}",
+                        "cosmic_alignment": f"Lua em {moon_data['phase_name']}, {tidal_data['type']}, {astro_data['sun_sign']}",
+                        "universal_signature": f"Você carrega a assinatura cósmica única de {result['name']} + {moon_data['phase_name']} + {astro_data['element']}"
+                    }
                 },
                 "result": result,
                 "constellation": {'name': result.get('constellation', 'N/A')},

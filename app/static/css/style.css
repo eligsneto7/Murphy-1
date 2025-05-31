@@ -2288,4 +2288,1018 @@ p, .data-description, .temporal-message {
         font-size: 0.8rem;
         padding: 8px 12px;
     }
+}
+
+/* ===== ULTRA MURPHY-1 EXPERIENCE CSS ===== */
+
+/* Cosmic Hero Header */
+.ultra-murphy-experience {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0a 100%);
+    color: var(--pure-white);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.cosmic-hero-header {
+    position: relative;
+    min-height: 40vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(93, 173, 226, 0.1) 0%, transparent 70%);
+    border-bottom: 2px solid rgba(93, 173, 226, 0.3);
+    overflow: hidden;
+}
+
+.stellar-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.stellar-particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: stellarFloat 15s linear infinite;
+    opacity: 0.7;
+}
+
+@keyframes stellarFloat {
+    0% {
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) scale(1);
+        opacity: 0;
+    }
+}
+
+.hero-content {
+    text-align: center;
+    z-index: 10;
+    max-width: 1200px;
+    padding: 2rem;
+}
+
+.ultra-title {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 30px rgba(93, 173, 226, 0.8);
+}
+
+.title-glow {
+    background: linear-gradient(45deg, #5dade2, #85c1e9, #aed6f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titlePulse 3s ease-in-out infinite;
+}
+
+.title-ultra {
+    color: #FFD700;
+    text-shadow: 0 0 20px #FFD700;
+    animation: ultraGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes titlePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+@keyframes ultraGlow {
+    0% { text-shadow: 0 0 20px #FFD700; }
+    100% { text-shadow: 0 0 40px #FFD700, 0 0 60px #FFD700; }
+}
+
+.birth-signature {
+    margin: 2rem 0;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.birth-moment {
+    color: var(--accent-cyan);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.cosmic-alignment {
+    color: var(--light-cyan);
+    margin-bottom: 0.5rem;
+}
+
+.universal-signature {
+    color: #FFD700;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.nav-quantum-button {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, rgba(93, 173, 226, 0.2), rgba(93, 173, 226, 0.1));
+    border: 2px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    margin-top: 2rem;
+}
+
+.nav-quantum-button:hover {
+    background: var(--accent-cyan);
+    color: var(--deep-black);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(93, 173, 226, 0.4);
+}
+
+/* Stellar Projector Section */
+.stellar-projector-section {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.section-quantum-title {
+    font-size: 2.5rem;
+    color: var(--accent-cyan);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(93, 173, 226, 0.5);
+}
+
+.quantum-subtitle {
+    font-size: 1.2rem;
+    color: var(--light-cyan);
+    margin-bottom: 3rem;
+}
+
+.holographic-frame {
+    position: relative;
+    display: inline-block;
+    padding: 20px;
+    background: radial-gradient(circle, rgba(93, 173, 226, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    border: 3px solid rgba(93, 173, 226, 0.4);
+    box-shadow: 
+        0 0 50px rgba(93, 173, 226, 0.3),
+        inset 0 0 50px rgba(93, 173, 226, 0.1);
+}
+
+.quantum-canvas {
+    width: 500px;
+    height: 500px;
+    display: block;
+    cursor: grab;
+    border-radius: 50%;
+    background: radial-gradient(circle, #000814 0%, #001d3d 100%);
+    touch-action: none;
+}
+
+.quantum-canvas:hover {
+    box-shadow: inset 0 0 30px rgba(93, 173, 226, 0.2);
+}
+
+/* Holographic Panel */
+.holographic-panel {
+    position: absolute;
+    top: 20px;
+    right: -350px;
+    width: 320px;
+    background: linear-gradient(135deg, rgba(26, 44, 61, 0.95), rgba(10, 15, 20, 0.95));
+    border: 2px solid var(--accent-cyan);
+    border-radius: 12px;
+    backdrop-filter: blur(15px);
+    box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.7),
+        0 0 25px rgba(93, 173, 226, 0.3);
+    z-index: 100;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(0);
+}
+
+.holographic-panel.hidden {
+    right: -350px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.holographic-panel:not(.hidden) {
+    right: 20px;
+    opacity: 1;
+    pointer-events: all;
+}
+
+.quantum-close {
+    background: none;
+    border: none;
+    color: var(--light-gray);
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.quantum-close:hover {
+    background: rgba(93, 173, 226, 0.2);
+    color: var(--pure-white);
+    transform: rotate(90deg);
+}
+
+.holographic-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.detail-quantum-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(93, 173, 226, 0.2);
+}
+
+.quantum-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Cosmic Sections Container */
+.cosmic-sections-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+.cosmic-section {
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, rgba(26, 44, 61, 0.3), rgba(10, 15, 20, 0.3));
+    border-radius: 16px;
+    border: 1px solid rgba(93, 173, 226, 0.2);
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.cosmic-section:hover {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 8px 25px rgba(93, 173, 226, 0.15);
+}
+
+.cosmic-section.expanded {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 15px 40px rgba(93, 173, 226, 0.25);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(93, 173, 226, 0.1), transparent);
+}
+
+.section-header:hover {
+    background: linear-gradient(135deg, rgba(93, 173, 226, 0.2), rgba(93, 173, 226, 0.05));
+}
+
+.section-icon {
+    font-size: 2.5rem;
+    margin-right: 1.5rem;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.section-title {
+    flex: 1;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin: 0;
+}
+
+.section-status {
+    font-size: 1rem;
+    color: var(--light-cyan);
+    margin-right: 1rem;
+    background: rgba(93, 173, 226, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+.expand-indicator {
+    font-size: 1.5rem;
+    color: var(--accent-cyan);
+    transition: transform 0.3s ease;
+}
+
+.section-content {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 2rem;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+/* Star Section Styles */
+.star-identity {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.star-name-ultra {
+    font-size: 3rem;
+    background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    animation: starNameGlow 4s ease-in-out infinite;
+}
+
+@keyframes starNameGlow {
+    0%, 100% { text-shadow: 0 0 20px #FFD700; }
+    50% { text-shadow: 0 0 40px #FFD700, 0 0 60px #FFA500; }
+}
+
+.cosmic-message-frame {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(93, 173, 226, 0.1));
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    margin: 2rem 0;
+}
+
+.cosmic-message {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--pure-white);
+    font-style: italic;
+    margin: 0;
+}
+
+.stellar-data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.data-quantum-module {
+    background: linear-gradient(135deg, rgba(93, 173, 226, 0.1), rgba(10, 15, 20, 0.5));
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(93, 173, 226, 0.2);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.data-quantum-module:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 10px 25px rgba(93, 173, 226, 0.2);
+}
+
+.data-quantum-module h4 {
+    color: var(--accent-cyan);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    letter-spacing: 0.1em;
+}
+
+.data-ultra-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pure-white);
+    margin-bottom: 0.5rem;
+}
+
+/* Stellar Curiosities */
+.stellar-curiosities {
+    margin-top: 3rem;
+}
+
+.curiosities-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(10, 15, 20, 0.5), rgba(26, 44, 61, 0.3));
+    border-radius: 12px;
+    border-left: 4px solid var(--accent-cyan);
+}
+
+.timeline-icon {
+    font-size: 2rem;
+    color: var(--accent-cyan);
+    min-width: 40px;
+}
+
+.timeline-content h4 {
+    color: var(--accent-cyan);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.quantum-facts-list {
+    list-style: none;
+    padding: 0;
+}
+
+.quantum-facts-list li {
+    padding: 0.5rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.quantum-facts-list li:before {
+    content: "⚡";
+    position: absolute;
+    left: 0;
+    color: var(--accent-cyan);
+}
+
+/* Moon Phase Visualization */
+.moon-visualization {
+    padding: 2rem 0;
+}
+
+.moon-phase-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.moon-disc {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    position: relative;
+    background: linear-gradient(135deg, #c0c0c0, #808080);
+    box-shadow: 0 0 30px rgba(192, 192, 192, 0.5);
+    overflow: hidden;
+}
+
+.moon-surface {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 30%, #e0e0e0, #a0a0a0);
+    border-radius: 50%;
+}
+
+.moon-shadow {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, #1a1a1a);
+    border-radius: 0 50% 50% 0;
+    opacity: 0.7;
+}
+
+@keyframes moonPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(192, 192, 192, 0.5); }
+    50% { transform: scale(1.1); box-shadow: 0 0 50px rgba(192, 192, 192, 0.8); }
+}
+
+.phase-info h3 {
+    font-size: 2rem;
+    color: #c0c0c0;
+    margin-bottom: 0.5rem;
+}
+
+.phase-percentage {
+    font-size: 1.2rem;
+    color: var(--light-cyan);
+}
+
+.lunar-data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.lunar-module {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(10, 15, 20, 0.5));
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(192, 192, 192, 0.2);
+    text-align: center;
+}
+
+.lunar-module h4 {
+    color: #c0c0c0;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.lunar-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--pure-white);
+}
+
+.lunar-prophecy {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(93, 173, 226, 0.1));
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(192, 192, 192, 0.3);
+    text-align: center;
+}
+
+/* Tidal Forces Visualization */
+.gravitational-forces {
+    margin-bottom: 3rem;
+}
+
+.force-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.force-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.force-bar label {
+    min-width: 120px;
+    color: var(--light-cyan);
+    font-weight: 600;
+}
+
+.bar-container {
+    flex: 1;
+    height: 30px;
+    background: rgba(10, 15, 20, 0.5);
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(93, 173, 226, 0.3);
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 15px;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.bar-fill.moon-force {
+    background: linear-gradient(90deg, #c0c0c0, #e0e0e0);
+}
+
+.bar-fill.sun-force {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+}
+
+.bar-fill.total-force {
+    background: linear-gradient(90deg, var(--accent-cyan), var(--light-cyan));
+}
+
+@keyframes forceWave {
+    0% { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+}
+
+.force-value {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--pure-white);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.tidal-influence {
+    background: linear-gradient(135deg, rgba(93, 173, 226, 0.1), rgba(10, 15, 20, 0.5));
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(93, 173, 226, 0.3);
+}
+
+.intensity-indicator {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.intensity-value {
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+
+.intensity-value.alta {
+    background: rgba(255, 69, 69, 0.2);
+    color: #ff4545;
+    border: 1px solid #ff4545;
+}
+
+.intensity-value.moderada {
+    background: rgba(255, 165, 0, 0.2);
+    color: #ffa500;
+    border: 1px solid #ffa500;
+}
+
+.intensity-value.suave {
+    background: rgba(144, 238, 144, 0.2);
+    color: #90ee90;
+    border: 1px solid #90ee90;
+}
+
+/* Astrological Profile */
+.astrological-profile {
+    padding: 2rem 0;
+}
+
+.zodiac-identity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.sign-display {
+    text-align: center;
+}
+
+.zodiac-sign {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+@keyframes zodiacGlow {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.element-badge {
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    border: 2px solid;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+.element-badge.fogo {
+    border-color: #ff4545;
+    color: #ff4545;
+}
+
+.element-badge.terra {
+    border-color: #8b4513;
+    color: #daa520;
+}
+
+.element-badge.ar {
+    border-color: #87ceeb;
+    color: #87ceeb;
+}
+
+.element-badge.água {
+    border-color: #4169e1;
+    color: #4169e1;
+}
+
+.element-name {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.quality-name {
+    display: block;
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.planets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.planet-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(93, 173, 226, 0.1), rgba(10, 15, 20, 0.5));
+    border-radius: 12px;
+    border: 1px solid rgba(93, 173, 226, 0.2);
+    transition: all 0.3s ease;
+}
+
+.planet-item.visible {
+    border-color: #90ee90;
+    background: linear-gradient(135deg, rgba(144, 238, 144, 0.1), rgba(10, 15, 20, 0.5));
+}
+
+.planet-name {
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+}
+
+.planet-constellation {
+    color: var(--light-cyan);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.planet-visibility {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.dominant-planet {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.dominant-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid #FFD700;
+}
+
+/* Stellar Events */
+.stellar-events-timeline {
+    padding: 2rem 0;
+}
+
+.event-card,
+.season-card {
+    background: linear-gradient(135deg, rgba(93, 173, 226, 0.1), rgba(10, 15, 20, 0.5));
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(93, 173, 226, 0.3);
+    margin-bottom: 2rem;
+}
+
+@keyframes cardReveal {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.event-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.event-icon {
+    font-size: 2rem;
+}
+
+.event-date {
+    margin-left: auto;
+    background: rgba(93, 173, 226, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--accent-cyan);
+}
+
+.cosmic-connection {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(93, 173, 226, 0.1));
+    border-radius: 8px;
+    border-left: 4px solid #FFD700;
+}
+
+/* Quantum Actions */
+.quantum-actions {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 4rem 2rem;
+    flex-wrap: wrap;
+}
+
+.quantum-button {
+    padding: 1.2rem 2.5rem;
+    border-radius: 12px;
+    font-family: var(--font-primary);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border: 2px solid;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.quantum-button.primary {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--light-cyan));
+    border-color: var(--accent-cyan);
+    color: var(--deep-black);
+}
+
+.quantum-button.secondary {
+    background: linear-gradient(135deg, rgba(93, 173, 226, 0.2), rgba(93, 173, 226, 0.1));
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+.quantum-button.tertiary {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+    border-color: #FFD700;
+    color: #FFD700;
+}
+
+.quantum-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Generation Overlay */
+.generation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.generation-content {
+    text-align: center;
+    color: var(--pure-white);
+}
+
+.quantum-loader {
+    width: 80px;
+    height: 80px;
+    border: 4px solid rgba(93, 173, 226, 0.2);
+    border-top: 4px solid var(--accent-cyan);
+    border-radius: 50%;
+    animation: quantumSpin 1s linear infinite;
+    margin: 0 auto 2rem;
+}
+
+@keyframes quantumSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.progress-quantum {
+    width: 300px;
+    height: 6px;
+    background: rgba(93, 173, 226, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 2rem auto;
+}
+
+.progress-quantum .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-cyan), #FFD700);
+    width: 0;
+    animation: progressFill 3s ease-out forwards;
+}
+
+@keyframes progressFill {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .ultra-title {
+        font-size: 2.5rem;
+    }
+    
+    .quantum-canvas {
+        width: 350px;
+        height: 350px;
+    }
+    
+    .holographic-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90vw;
+        max-width: 400px;
+        right: auto;
+    }
+    
+    .holographic-panel.hidden {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+    
+    .holographic-panel:not(.hidden) {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    
+    .moon-phase-display {
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .zodiac-identity {
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .quantum-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .stellar-data-grid,
+    .lunar-data-grid,
+    .planets-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .cosmic-sections-container {
+        padding: 2rem 1rem;
+    }
+    
+    .section-header {
+        padding: 1.5rem;
+    }
+    
+    .section-content {
+        padding: 0 1.5rem;
+    }
+    
+    .quantum-canvas {
+        width: 280px;
+        height: 280px;
+    }
 } 

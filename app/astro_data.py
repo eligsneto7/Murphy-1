@@ -5,6 +5,8 @@ Funções para gerar dados astronômicos e astrológicos
 
 from datetime import datetime, timedelta
 import random
+import math
+import ephem
 
 # Combine all event lists into a single ASTRONOMICAL_EVENTS list
 RECURRING_EVENTS = [
@@ -575,6 +577,339 @@ def get_astronomical_coincidences(birth_date, birth_time, latitude, longitude):
         'type': 'raro', 'days_diff': 0, 'during': True
     }]
 
+# ===== CÁLCULOS LUNARES AVANÇADOS =====
+def calculate_moon_phase(birth_date, birth_time, latitude, longitude):
+    """Calcula fase da lua e dados lunares para o momento do nascimento"""
+    try:
+        # Criar observador
+        observer = ephem.Observer()
+        observer.lat = str(latitude)
+        observer.lon = str(longitude)
+        observer.date = f"{birth_date} {birth_time}"
+        
+        # Lua
+        moon = ephem.Moon()
+        moon.compute(observer)
+        
+        # Calcular fase da lua (0 = nova, 1 = cheia)
+        phase = moon.moon_phase
+        
+        # Determinar nome da fase
+        if phase < 0.1:
+            phase_name = "🌑 Lua Nova"
+            phase_description = "Um novo começo, energia de renovação e potencial infinito"
+            mystical_meaning = "Nascido sob a Lua Nova, você carrega o poder dos novos começos e da manifestação"
+        elif phase < 0.25:
+            phase_name = "🌒 Lua Crescente"
+            phase_description = "Crescimento, expansão e construção de sonhos"
+            mystical_meaning = "A energia crescente da lua reflete em sua natureza progressiva e ambiciosa"
+        elif phase < 0.4:
+            phase_name = "🌓 Quarto Crescente"
+            phase_description = "Momento de decisões e superação de desafios"
+            mystical_meaning = "Você possui a força para superar obstáculos e tomar decisões importantes"
+        elif phase < 0.6:
+            phase_name = "🌔 Lua Gibosa Crescente"
+            phase_description = "Refinamento e preparação para a plenitude"
+            mystical_meaning = "Sua alma busca constantemente o aperfeiçoamento e a evolução"
+        elif phase < 0.75:
+            phase_name = "🌕 Lua Cheia"
+            phase_description = "Plenitude, intuição máxima e realização"
+            mystical_meaning = "Nascido na Lua Cheia, você possui intuição poderosa e energia magnética"
+        elif phase < 0.9:
+            phase_name = "🌖 Lua Gibosa Minguante"
+            phase_description = "Gratidão, compartilhamento e sabedoria"
+            mystical_meaning = "Você é um guardião de sabedoria, destinado a ensinar e guiar outros"
+        else:
+            phase_name = "🌗 Quarto Minguante"
+            phase_description = "Liberação, perdão e transformação"
+            mystical_meaning = "Sua alma tem o dom da transformação e da cura de velhas feridas"
+        
+        # Distância da Terra
+        distance_km = moon.earth_distance * 149597870.7  # Converter UA para km
+        
+        # Próxima lua cheia/nova
+        next_full = ephem.next_full_moon(observer.date)
+        next_new = ephem.next_new_moon(observer.date)
+        
+        return {
+            'phase': phase,
+            'phase_percentage': round(phase * 100, 1),
+            'phase_name': phase_name,
+            'phase_description': phase_description,
+            'mystical_meaning': mystical_meaning,
+            'distance_km': round(distance_km),
+            'altitude': round(math.degrees(moon.alt), 1),
+            'azimuth': round(math.degrees(moon.az), 1),
+            'next_full_moon': str(next_full)[:10],
+            'next_new_moon': str(next_new)[:10],
+            'constellation': moon.constellation[1] if hasattr(moon, 'constellation') else 'N/A'
+        }
+        
+    except Exception as e:
+        print(f"Erro no cálculo lunar: {e}")
+        return {
+            'phase': 0.5,
+            'phase_percentage': 50,
+            'phase_name': "🌕 Lua Misteriosa",
+            'phase_description': "Os segredos lunares aguardam para serem revelados",
+            'mystical_meaning': "Sua conexão com a lua transcende o tempo e o espaço",
+            'distance_km': 384400,
+            'altitude': 45,
+            'azimuth': 180,
+            'next_full_moon': "Em breve",
+            'next_new_moon': "Em breve",
+            'constellation': 'Cósmica'
+        }
+
+# ===== CÁLCULOS DE MARÉS =====
+def calculate_tidal_influence(birth_date, birth_time, latitude, longitude):
+    """Calcula influência das marés no momento do nascimento"""
+    try:
+        observer = ephem.Observer()
+        observer.lat = str(latitude)
+        observer.lon = str(longitude)
+        observer.date = f"{birth_date} {birth_time}"
+        
+        # Lua e Sol para cálculo das marés
+        moon = ephem.Moon()
+        sun = ephem.Sun()
+        moon.compute(observer)
+        sun.compute(observer)
+        
+        # Força gravitacional da lua (simplificado)
+        moon_distance = moon.earth_distance
+        moon_force = 1 / (moon_distance ** 3)  # Lei do inverso do quadrado
+        
+        # Força gravitacional do sol
+        sun_distance = sun.earth_distance
+        sun_force = 0.46 / (sun_distance ** 3)  # Sol tem 0.46x a força das marés da lua
+        
+        # Combinação das forças
+        total_force = moon_force + sun_force
+        
+        # Tipo de maré baseado na posição relativa
+        moon_sun_angle = abs(moon.ra - sun.ra)
+        if moon_sun_angle < 0.5 or moon_sun_angle > 5.8:
+            tide_type = "🌊 Maré de Sizígia"
+            tide_description = "Marés extremas - força gravitacional máxima"
+            personal_influence = "Você nasceu sob influência gravitacional intensa, o que pode indicar uma personalidade magnética e impactante"
+        elif 1.4 < moon_sun_angle < 1.8 or 4.6 < moon_sun_angle < 5.0:
+            tide_type = "🌀 Maré de Quadratura"
+            tide_description = "Marés moderadas - forças em equilíbrio"
+            personal_influence = "As forças cósmicas em equilíbrio no seu nascimento sugerem uma natureza equilibrada e harmoniosa"
+        else:
+            tide_type = "🌊 Maré Mista"
+            tide_description = "Marés variadas - influências cósmicas complexas"
+            personal_influence = "A complexidade das forças cósmicas reflete em sua personalidade multifacetada e única"
+        
+        return {
+            'type': tide_type,
+            'description': tide_description,
+            'personal_influence': personal_influence,
+            'moon_force': round(moon_force * 1000, 2),
+            'sun_force': round(sun_force * 1000, 2),
+            'total_force': round(total_force * 1000, 2),
+            'gravitational_intensity': 'Alta' if total_force > 0.003 else 'Moderada' if total_force > 0.002 else 'Suave'
+        }
+        
+    except Exception as e:
+        print(f"Erro no cálculo de marés: {e}")
+        return {
+            'type': "🌊 Maré Cósmica",
+            'description': "Influências gravitacionais misteriosas",
+            'personal_influence': "Você está conectado aos ritmos profundos do oceano cósmico",
+            'moon_force': 2.5,
+            'sun_force': 1.1,
+            'total_force': 3.6,
+            'gravitational_intensity': 'Mística'
+        }
+
+# ===== HORÓSCOPO E ASTROLOGIA =====
+def calculate_astrological_profile(birth_date, birth_time, latitude, longitude):
+    """Calcula perfil astrológico completo"""
+    try:
+        observer = ephem.Observer()
+        observer.lat = str(latitude)
+        observer.lon = str(longitude)
+        observer.date = f"{birth_date} {birth_time}"
+        
+        # Calcular posições planetárias
+        planets_data = {}
+        
+        planets = {
+            'Sol': ephem.Sun(),
+            'Lua': ephem.Moon(),
+            'Mercúrio': ephem.Mercury(),
+            'Vênus': ephem.Venus(),
+            'Marte': ephem.Mars(),
+            'Júpiter': ephem.Jupiter(),
+            'Saturno': ephem.Saturn(),
+            'Urano': ephem.Uranus(),
+            'Netuno': ephem.Neptune()
+        }
+        
+        for name, planet in planets.items():
+            planet.compute(observer)
+            constellation = planet.constellation[1] if hasattr(planet, 'constellation') else 'Desconhecida'
+            
+            planets_data[name] = {
+                'constellation': constellation,
+                'altitude': round(math.degrees(planet.alt), 1),
+                'azimuth': round(math.degrees(planet.az), 1),
+                'visible': planet.alt > 0
+            }
+        
+        # Determinar signo solar (simplificado baseado na data)
+        birth_dt = datetime.strptime(birth_date, "%Y-%m-%d")
+        day_of_year = birth_dt.timetuple().tm_yday
+        
+        zodiac_signs = [
+            (20, "♈ Áries", "Energia de fogo, liderança natural, pioneirismo"),
+            (49, "♉ Touro", "Estabilidade terrena, determinação, sensualidade"),
+            (80, "♊ Gêmeos", "Versatilidade mental, comunicação, curiosidade"),
+            (111, "♋ Câncer", "Intuição emocional, proteção, sensibilidade"),
+            (142, "♌ Leão", "Criatividade radiante, generosidade, liderança"),
+            (173, "♍ Virgem", "Precisão analítica, serviço, perfeição"),
+            (204, "♎ Libra", "Harmonia social, beleza, diplomacia"),
+            (234, "♏ Escorpião", "Intensidade transformadora, mistério, paixão"),
+            (265, "♐ Sagitário", "Expansão filosófica, aventura, sabedoria"),
+            (296, "♑ Capricórnio", "Ambição estrutural, responsabilidade, tradição"),
+            (326, "♒ Aquário", "Inovação humanitária, independência, visão futura"),
+            (356, "♓ Peixes", "Intuição oceânica, compaixão, espiritualidade"),
+            (366, "♈ Áries", "Energia de fogo, liderança natural, pioneirismo")  # Wraparound
+        ]
+        
+        sun_sign = "♈ Áries"
+        sun_description = "Energia cósmica única"
+        
+        for day_limit, sign, description in zodiac_signs:
+            if day_of_year <= day_limit:
+                sun_sign = sign
+                sun_description = description
+                break
+        
+        # Elemento e qualidade
+        elements = {
+            '♈': ('Fogo', 'Iniciação'),
+            '♌': ('Fogo', 'Fixo'),
+            '♐': ('Fogo', 'Mutável'),
+            '♉': ('Terra', 'Fixo'),
+            '♍': ('Terra', 'Mutável'),
+            '♑': ('Terra', 'Iniciação'),
+            '♊': ('Ar', 'Mutável'),
+            '♎': ('Ar', 'Iniciação'),
+            '♒': ('Ar', 'Fixo'),
+            '♋': ('Água', 'Iniciação'),
+            '♏': ('Água', 'Fixo'),
+            '♓': ('Água', 'Mutável')
+        }
+        
+        sign_symbol = sun_sign.split()[0]
+        element, quality = elements.get(sign_symbol, ('Éter', 'Transcendente'))
+        
+        return {
+            'sun_sign': sun_sign,
+            'sun_description': sun_description,
+            'element': element,
+            'quality': quality,
+            'planets': planets_data,
+            'dominant_planet': max(planets_data.keys(), key=lambda p: planets_data[p]['altitude']),
+            'astrological_summary': f"Nascido sob {sun_sign}, com elemento {element} dominante, você carrega a essência cósmica da {quality.lower()}."
+        }
+        
+    except Exception as e:
+        print(f"Erro no cálculo astrológico: {e}")
+        return {
+            'sun_sign': "⭐ Cósmico",
+            'sun_description': "Energia estelar única que transcende classificações terrestres",
+            'element': 'Éter',
+            'quality': 'Transcendente',
+            'planets': {},
+            'dominant_planet': 'Estrela Zenital',
+            'astrological_summary': "Sua essência cósmica vai além dos signos tradicionais, conectando-se diretamente às estrelas."
+        }
+
+# ===== EVENTOS ESTELARES HISTÓRICOS =====
+def calculate_stellar_events(birth_date, birth_time):
+    """Calcula eventos estelares significativos próximos à data de nascimento"""
+    try:
+        birth_dt = datetime.strptime(birth_date, "%Y-%m-%d")
+        
+        # Eventos astronômicos históricos marcantes
+        historical_events = [
+            (datetime(1969, 7, 20), "🚀 Primeira Caminhada Lunar", "A humanidade deu seus primeiros passos na Lua"),
+            (datetime(1977, 8, 20), "🛸 Lançamento da Voyager", "Mensageiro da Terra rumo às estrelas"),
+            (datetime(1990, 4, 24), "🔭 Lançamento do Hubble", "Olhos da humanidade no cosmos"),
+            (datetime(1995, 12, 7), "🌍 Primeiro Exoplaneta", "Descoberta de mundos além do Sistema Solar"),
+            (datetime(2012, 8, 5), "🤖 Curiosity em Marte", "Robô explorador alcança o Planeta Vermelho"),
+            (datetime(2019, 4, 10), "⚫ Primeira Foto de Buraco Negro", "A humanidade vê o invisível"),
+            (datetime(2021, 2, 18), "🚁 Helicóptero em Marte", "Primeiro voo em outro planeta"),
+            (datetime(1986, 1, 28), "🚀 Desafio da Tragédia Challenger", "Lembrete da coragem dos exploradores espaciais"),
+            (datetime(1997, 7, 4), "🛸 Mars Pathfinder", "Primeiro rover moderno em Marte"),
+            (datetime(2003, 2, 1), "🛸 Columbia", "Honrando os heróis da exploração espacial")
+        ]
+        
+        # Encontrar evento mais próximo
+        closest_event = None
+        min_diff = float('inf')
+        
+        for event_date, event_name, event_description in historical_events:
+            diff = abs((birth_dt - event_date).days)
+            if diff < min_diff:
+                min_diff = diff
+                closest_event = {
+                    'name': event_name,
+                    'description': event_description,
+                    'date': event_date.strftime("%d/%m/%Y"),
+                    'days_difference': min_diff,
+                    'cosmic_connection': ""
+                }
+        
+        if closest_event and min_diff <= 365:  # Evento no mesmo ano
+            if min_diff <= 30:
+                closest_event['cosmic_connection'] = f"Apenas {min_diff} dias separam seu nascimento deste marco cósmico. Uma sincronia extraordinária!"
+            elif min_diff <= 90:
+                closest_event['cosmic_connection'] = f"Nascido {min_diff} dias após este evento histórico, você carrega sua energia transformadora."
+            else:
+                closest_event['cosmic_connection'] = f"O mesmo ano cósmico que testemunhou {closest_event['name']} também celebrou seu nascimento."
+        
+        # Eventos astronômicos por período do ano
+        seasonal_events = {
+            'primavera': "🌸 Equinócio de Primavera - Renovação e crescimento cósmico",
+            'verao': "☀️ Solstício de Verão - Energia solar máxima",
+            'outono': "🍂 Equinócio de Outono - Equilíbrio e transformação",
+            'inverno': "❄️ Solstício de Inverno - Introspecção e renascimento"
+        }
+        
+        month = birth_dt.month
+        if month in [3, 4, 5]:
+            seasonal_event = seasonal_events['primavera']
+        elif month in [6, 7, 8]:
+            seasonal_event = seasonal_events['verao']
+        elif month in [9, 10, 11]:
+            seasonal_event = seasonal_events['outono']
+        else:
+            seasonal_event = seasonal_events['inverno']
+        
+        return {
+            'historical_event': closest_event,
+            'seasonal_energy': seasonal_event,
+            'birth_year_significance': f"O ano de {birth_dt.year} marca um momento único na jornada cósmica da humanidade."
+        }
+        
+    except Exception as e:
+        print(f"Erro no cálculo de eventos estelares: {e}")
+        return {
+            'historical_event': {
+                'name': "🌟 Evento Cósmico Único",
+                'description': "Seu nascimento é um marco no tempo cósmico",
+                'date': birth_date,
+                'cosmic_connection': "Você é parte da grande narrativa do cosmos."
+            },
+            'seasonal_energy': "✨ Energia Cósmica Universal",
+            'birth_year_significance': "Cada nascimento é um evento único no universo."
+        }
+
 __all__ = [
     'generate_cosmic_message', 
     'generate_star_curiosities', 
@@ -584,5 +919,9 @@ __all__ = [
     'estimate_age_from_spectral', # Export helpers if used by other modules
     'estimate_temperature_from_spectral',
     'estimate_mass_from_magnitude',
-    'calculate_historical_event'
+    'calculate_historical_event',
+    'calculate_moon_phase',
+    'calculate_tidal_influence',
+    'calculate_astrological_profile',
+    'calculate_stellar_events'
 ] 
