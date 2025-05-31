@@ -66,8 +66,22 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 async def debug_middleware(request: Request, call_next):
     print(f"📍 Request: {request.method} {request.url.path}")
     print(f"📍 Headers: {dict(request.headers)}")
+    
+    # Debug específico para arquivos estáticos
+    if request.url.path.startswith('/static/'):
+        print(f"🎨 STATIC FILE REQUEST: {request.url.path}")
+        print(f"🎨 Full URL: {request.url}")
+        print(f"🎨 Host: {request.headers.get('host')}")
+        
     response = await call_next(request)
     print(f"📍 Response: {response.status_code}")
+    
+    # Debug específico para respostas de arquivos estáticos
+    if request.url.path.startswith('/static/'):
+        print(f"🎨 STATIC RESPONSE: {response.status_code} for {request.url.path}")
+        if response.status_code != 200:
+            print(f"🎨 ERROR: Static file failed!")
+    
     return response
 
 # Lazy loading - criar objetos apenas quando necessário
@@ -919,6 +933,22 @@ async def debug_structure():
         result["static_error"] = str(e)
     
     return result
+
+@app.get("/test-static")
+async def test_static():
+    """Teste específico para arquivos estáticos"""
+    css_path = BASE_DIR / "static" / "css" / "style.css"
+    js_path = BASE_DIR / "static" / "js" / "script.js"
+    
+    return {
+        "css_exists": css_path.exists(),
+        "css_size": css_path.stat().st_size if css_path.exists() else 0,
+        "js_exists": js_path.exists(),
+        "js_size": js_path.stat().st_size if js_path.exists() else 0,
+        "static_mount_working": "app.mount() está ativo",
+        "css_url_should_be": "/static/css/style.css",
+        "js_url_should_be": "/static/js/script.js"
+    }
 
 # Remover a execução direta para deploy
 # if __name__ == "__main__":
