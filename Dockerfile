@@ -18,7 +18,10 @@ RUN python -c "import uvicorn, fastapi; print('✅ Core packages installed')"
 # Test app import with debug (fixed syntax)
 RUN echo "=== Testing app import with debug ===" && python -c "import sys; print('Python path:', sys.path); print('Starting app import...'); from app.main import app; print('✅ App imports successfully')"
 
+# Make startup script executable
+RUN chmod +x start_server.py
+
 EXPOSE 8000
 
-# Simple command that handles PORT correctly
-CMD python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info 
+# Use Python script to handle PORT variable correctly
+CMD ["python", "start_server.py"] 
