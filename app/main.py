@@ -774,46 +774,12 @@ def generate_cosmic_message(star: dict) -> str:
 
 @app.get("/api/health")
 async def health_check():
-    """Endpoint de verificação de saúde com status detalhado"""
-    try:
-        # Verificar se os objetos globais estão carregados
-        status = {
-            "status": "healthy",
-            "message": "Murphy-1 está operacional e pronto para análise temporal!",
-            "timestamp": datetime.now().isoformat(),
-            "components": {}
-        }
-        
-        # Verificar calculator
-        try:
-            status["components"]["calculator"] = "loaded" if get_calculator() else "error"
-        except:
-            status["components"]["calculator"] = "loading"
-        
-        # Verificar star_catalog
-        try:
-            catalog_status = "loaded" if get_star_catalog() and hasattr(get_star_catalog(), 'stars_df') else "error"
-            if catalog_status == "loaded" and hasattr(get_star_catalog(), 'stars_df'):
-                status["components"]["star_catalog"] = f"loaded ({len(get_star_catalog().stars_df)} stars)"
-            else:
-                status["components"]["star_catalog"] = "loading"
-        except:
-            status["components"]["star_catalog"] = "loading"
-        
-        # Verificar modern_sky_renderer
-        try:
-            status["components"]["sky_renderer"] = "loaded" if get_modern_sky_renderer() else "error"
-        except:
-            status["components"]["sky_renderer"] = "loading"
-        
-        return status
-        
-    except Exception as e:
-        return {
-            "status": "starting",
-            "message": f"Murphy-1 ainda está inicializando: {str(e)}",
-            "timestamp": datetime.now().isoformat()
-        }
+    """Endpoint de verificação de saúde - simples e rápido para Railway"""
+    return {
+        "status": "healthy",
+        "message": "Murphy-1 está operacional!",
+        "timestamp": datetime.now().isoformat()
+    }
 
 # Remover a execução direta para deploy
 # if __name__ == "__main__":
