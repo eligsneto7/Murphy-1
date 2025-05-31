@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Murphy1 🌹{% endblock %}</title>
+    <title>{% block title %}Murphy-1 🌌{% endblock %}</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <link rel="stylesheet" href="/static/css/style.css">
     
     {% block extra_head %}{% endblock %}
 </head>
@@ -227,7 +227,7 @@
     </style>
     
     <!-- JavaScript -->
-    <script src="{{ url_for('static', path='/js/script.js') }}"></script>
+    <script src="/static/js/script.js"></script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html> 
