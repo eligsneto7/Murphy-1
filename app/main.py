@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 import uvicorn
 from datetime import datetime
 import pytz
@@ -20,9 +22,33 @@ from app.astrology_calculator import AstrologyCalculator
 
 app = FastAPI(title="Murphy-1", description="Explore as coordenadas do espaço-tempo e encontre sua estrela-guia")
 
+# Adicionar middleware CORS para Railway
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Adicionar middleware para trusted hosts
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["*"]  # Permite qualquer host no Railway
+)
+
 # Configuração de templates e arquivos estáticos
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+# Middleware de debug para Railway
+@app.middleware("http")
+async def debug_middleware(request: Request, call_next):
+    print(f"📍 Request: {request.method} {request.url.path}")
+    print(f"📍 Headers: {dict(request.headers)}")
+    response = await call_next(request)
+    print(f"📍 Response: {response.status_code}")
+    return response
 
 # Lazy loading - criar objetos apenas quando necessário
 calculator = None
@@ -780,6 +806,11 @@ async def health_check():
         "message": "Murphy-1 está operacional!",
         "timestamp": datetime.now().isoformat()
     }
+
+@app.get("/test")
+async def test_endpoint():
+    """Endpoint de teste simples para debug"""
+    return {"message": "Murphy-1 está funcionando! 🚀", "time": datetime.now().isoformat()}
 
 # Remover a execução direta para deploy
 # if __name__ == "__main__":
