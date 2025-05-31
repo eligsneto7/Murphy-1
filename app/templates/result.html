@@ -113,6 +113,61 @@
                 </div>
             </div>
             
+            <!-- Seção de Coincidências Astronômicas -->
+            {% if data.coincidences and data.coincidences.has_coincidence %}
+            <div class="cosmic-coincidence-section">
+                <h3 class="coincidence-title">🌌 COINCIDÊNCIA?</h3>
+                
+                <div class="coincidence-container">
+                    <div class="coincidence-icon">
+                        {% if data.coincidences.type == 'meteoros' %}⭐
+                        {% elif data.coincidences.type == 'eclipse' %}🌒
+                        {% elif data.coincidences.type == 'solar' %}☀️
+                        {% elif data.coincidences.type == 'lunar' %}🌙
+                        {% elif data.coincidences.type == 'planetário' %}🪐
+                        {% elif data.coincidences.type == 'espacial' %}🚀
+                        {% elif data.coincidences.type == 'cometa' %}☄️
+                        {% elif data.coincidences.type == 'conjunção' %}✨
+                        {% else %}🌠
+                        {% endif %}
+                    </div>
+                    
+                    <div class="coincidence-content">
+                        <p class="coincidence-message">
+                            Você sabia que <span class="coincidence-timing">{{ data.coincidences.timing }}</span> seu nascimento 
+                            {% if data.coincidences.is_historical %}
+                            ocorreu o {{ data.coincidences.event }}?
+                            {% else %}
+                            aconteceu a {{ data.coincidences.event }}?
+                            {% endif %}
+                        </p>
+                        
+                        <p class="coincidence-reflection">
+                            {% if data.coincidences.type == 'meteoros' %}
+                            Como as estrelas cadentes, você traz luz e movimento ao mundo.
+                            {% elif data.coincidences.type == 'eclipse' %}
+                            Momentos de transformação cósmica marcam sua jornada.
+                            {% elif data.coincidences.type == 'solar' %}
+                            A energia do Sol ecoa em sua natureza vibrante.
+                            {% elif data.coincidences.type == 'lunar' %}
+                            Os mistérios lunares refletem em sua intuição profunda.
+                            {% elif data.coincidences.type == 'planetário' %}
+                            Você carrega a essência exploradora dos mundos distantes.
+                            {% elif data.coincidences.type == 'espacial' %}
+                            O espírito pioneiro da exploração espacial vive em você.
+                            {% elif data.coincidences.type == 'cometa' %}
+                            Como um cometa, você deixa um rastro inesquecível por onde passa.
+                            {% elif data.coincidences.type == 'conjunção' %}
+                            Alinhamentos raros marcam destinos extraordinários.
+                            {% else %}
+                            O cosmos conspirou para tornar seu nascimento especial.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="star-data-grid">
                 <div class="data-module">
                     <div class="module-header">

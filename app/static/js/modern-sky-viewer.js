@@ -69,7 +69,17 @@ class ModernSkyViewer {
             mouseY: 0,
             time: 0,
             shootingStars: [],
-            particles: []
+            particles: [],
+            // Drag state
+            isDragging: false,
+            dragStartX: 0,
+            dragStartY: 0,
+            dragPanStartX: 0,
+            dragPanStartY: 0,
+            // Touch state
+            lastTouchDistance: 0,
+            touchStartX: 0,
+            touchStartY: 0
         };
         
         // Performance optimization
@@ -228,7 +238,9 @@ class ModernSkyViewer {
     
     setupEventListeners() {
         // Mouse events
+        this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
         this.canvas.addEventListener('mouseout', () => this.handleMouseOut());
         this.canvas.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false });
         this.canvas.addEventListener('click', (e) => this.handleClick(e));
@@ -242,17 +254,46 @@ class ModernSkyViewer {
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
     }
     
+    handleMouseDown(e) {
+        if (e.button === 0) { // Left mouse button
+            const rect = this.canvas.getBoundingClientRect();
+            this.state.isDragging = true;
+            this.state.dragStartX = e.clientX - rect.left;
+            this.state.dragStartY = e.clientY - rect.top;
+            this.state.dragPanStartX = this.state.panX;
+            this.state.dragPanStartY = this.state.panY;
+            this.canvas.style.cursor = 'grabbing';
+        }
+    }
+    
     handleMouseMove(e) {
         const rect = this.canvas.getBoundingClientRect();
         this.state.mouseX = e.clientX - rect.left;
         this.state.mouseY = e.clientY - rect.top;
         
-        // Check for hovered objects
-        this.state.hoveredObject = this.getObjectAtPosition(this.state.mouseX, this.state.mouseY);
+        if (this.state.isDragging) {
+            // Calculate drag delta
+            const deltaX = this.state.mouseX - this.state.dragStartX;
+            const deltaY = this.state.mouseY - this.state.dragStartY;
+            
+            // Update pan with limits
+            const maxPan = this.radius * 0.5;
+            this.state.targetPanX = Math.max(-maxPan, Math.min(maxPan, this.state.dragPanStartX + deltaX));
+            this.state.targetPanY = Math.max(-maxPan, Math.min(maxPan, this.state.dragPanStartY + deltaY));
+        } else {
+            // Check for hovered objects
+            this.state.hoveredObject = this.getObjectAtPosition(this.state.mouseX, this.state.mouseY);
+            this.canvas.style.cursor = this.state.hoveredObject ? 'pointer' : 'grab';
+        }
+    }
+    
+    handleMouseUp() {
+        this.state.isDragging = false;
         this.canvas.style.cursor = this.state.hoveredObject ? 'pointer' : 'grab';
     }
     
     handleMouseOut() {
+        this.state.isDragging = false;
         this.state.hoveredObject = null;
         this.canvas.style.cursor = 'default';
     }
@@ -264,32 +305,75 @@ class ModernSkyViewer {
     }
     
     handleClick(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        const clickedObject = this.getObjectAtPosition(x, y);
-        if (clickedObject) {
-            this.showObjectDetails(clickedObject);
-            this.state.selectedObject = clickedObject;
+        // Only process click if we weren't dragging
+        if (!this.state.isDragging) {
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const clickedObject = this.getObjectAtPosition(x, y);
+            if (clickedObject) {
+                this.showObjectDetails(clickedObject);
+                this.state.selectedObject = clickedObject;
+            }
         }
     }
     
     handleTouchStart(e) {
         e.preventDefault();
+        
         if (e.touches.length === 1) {
+            // Single touch - start drag
             const touch = e.touches[0];
             const rect = this.canvas.getBoundingClientRect();
             const x = touch.clientX - rect.left;
             const y = touch.clientY - rect.top;
             
+            this.state.isDragging = true;
+            this.state.touchStartX = x;
+            this.state.touchStartY = y;
+            this.state.dragPanStartX = this.state.panX;
+            this.state.dragPanStartY = this.state.panY;
+            
             this.state.hoveredObject = this.getObjectAtPosition(x, y);
+        } else if (e.touches.length === 2) {
+            // Two touches - prepare for pinch zoom
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            this.state.lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
         }
     }
     
     handleTouchMove(e) {
         e.preventDefault();
-        // Implement touch pan/zoom if needed
+        
+        if (e.touches.length === 1 && this.state.isDragging) {
+            // Single touch drag
+            const touch = e.touches[0];
+            const rect = this.canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            const deltaX = x - this.state.touchStartX;
+            const deltaY = y - this.state.touchStartY;
+            
+            // Update pan with limits
+            const maxPan = this.radius * 0.5;
+            this.state.targetPanX = Math.max(-maxPan, Math.min(maxPan, this.state.dragPanStartX + deltaX));
+            this.state.targetPanY = Math.max(-maxPan, Math.min(maxPan, this.state.dragPanStartY + deltaY));
+        } else if (e.touches.length === 2) {
+            // Pinch zoom
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (this.state.lastTouchDistance > 0) {
+                const scale = distance / this.state.lastTouchDistance;
+                this.state.targetZoom = Math.max(0.5, Math.min(5, this.state.targetZoom * scale));
+            }
+            
+            this.state.lastTouchDistance = distance;
+        }
     }
     
     handleTouchEnd() {

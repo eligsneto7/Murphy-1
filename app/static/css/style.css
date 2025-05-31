@@ -273,11 +273,10 @@ body {
 }
 
 .fact-item::before {
-    content: '⚡';
-    position: absolute;
-    left: 0;
-    color: var(--tars-blue);
-    font-size: 1.1rem;
+    content: '✦';
+    color: var(--accent-cyan);
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
 }
 
 /* ===== ENHANCED BACKGROUND STARS ===== */
@@ -793,22 +792,21 @@ body {
 .modern-sky-container {
     position: relative;
     width: 100%;
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
-    background: var(--deep-black);
-    border: 2px solid rgba(93, 173, 226, 0.3);
-    border-radius: 12px;
+    background: radial-gradient(ellipse at center, #0a1929 0%, #000814 100%);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 15px 40px rgba(93, 173, 226, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
 }
 
 .modern-sky-canvas {
     width: 100%;
-    height: 600px;
+    height: 500px;
     display: block;
-    background: var(--deep-black);
-    cursor: crosshair;
-    transition: all var(--transition-normal);
+    cursor: grab;
+    background: #000814;
+    touch-action: none;
 }
 
 .modern-sky-canvas:hover {
@@ -1514,6 +1512,35 @@ body {
         padding: 1.5rem;
         margin: 0 0.5rem;
     }
+    
+    /* Coincidências Mobile */
+    .cosmic-coincidence-section {
+        padding: 1.5rem;
+        margin: 1.5rem 0.5rem;
+    }
+    
+    .coincidence-container {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .coincidence-icon {
+        font-size: 3rem;
+    }
+    
+    .coincidence-message {
+        font-size: 1.1rem;
+    }
+    
+    .coincidence-reflection {
+        font-size: 1rem;
+        padding-left: 1rem;
+    }
+    
+    .coincidence-title {
+        font-size: 1.4rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -2064,4 +2091,148 @@ p, .data-description, .temporal-message {
 .module-header h3,
 .module-header h4 {
     margin-bottom: 1rem;
+}
+
+/* ===== COSMIC COINCIDENCE SECTION ===== */
+.cosmic-coincidence-section {
+    margin: var(--spacing-xxl) 0;
+    padding: var(--spacing-xl);
+    background: linear-gradient(135deg, rgba(10, 15, 20, 0.8) 0%, rgba(26, 44, 61, 0.6) 100%);
+    border-radius: 12px;
+    border: 2px solid rgba(93, 173, 226, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.cosmic-coincidence-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(93, 173, 226, 0.1) 0%, transparent 70%);
+    animation: cosmic-pulse 8s ease-in-out infinite;
+}
+
+@keyframes cosmic-pulse {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.1) rotate(180deg); }
+}
+
+.coincidence-title {
+    font-size: 1.8rem;
+    color: var(--accent-cyan);
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+}
+
+.coincidence-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    position: relative;
+    z-index: 1;
+}
+
+.coincidence-icon {
+    font-size: 4rem;
+    flex-shrink: 0;
+    animation: float-icon 3s ease-in-out infinite;
+}
+
+@keyframes float-icon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.coincidence-content {
+    flex: 1;
+}
+
+.coincidence-message {
+    font-size: 1.3rem;
+    color: var(--pure-white);
+    line-height: 1.8;
+    margin-bottom: var(--spacing-md);
+}
+
+.coincidence-timing {
+    color: var(--accent-cyan);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-underline-offset: 0.2em;
+}
+
+.coincidence-reflection {
+    font-size: 1.1rem;
+    color: var(--light-gray);
+    font-style: italic;
+    line-height: 1.6;
+    padding-left: var(--spacing-lg);
+    border-left: 3px solid var(--accent-cyan);
+}
+
+/* ===== STARS BACKGROUND ===== */
+.stars-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(ellipse at center, rgba(26, 44, 61, 0.3) 0%, var(--deep-black) 70%);
+}
+
+.stars, .stars2, .stars3 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+}
+
+.stars {
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, var(--star-blue), transparent),
+        radial-gradient(2px 2px at 40px 70px, var(--light-cyan), transparent),
+        radial-gradient(1px 1px at 90px 40px, var(--pure-white), transparent),
+        radial-gradient(1px 1px at 130px 80px, var(--accent-cyan), transparent),
+        radial-gradient(2px 2px at 160px 30px, var(--star-blue), transparent),
+        radial-gradient(1px 1px at 200px 100px, var(--murphy-gold), transparent);
+    background-repeat: repeat;
+    background-size: 200px 100px;
+    animation: move-stars 200s linear infinite;
+}
+
+.stars2 {
+    background-image: 
+        radial-gradient(1px 1px at 40px 60px, var(--light-cyan), transparent),
+        radial-gradient(1px 1px at 80px 10px, var(--star-blue), transparent),
+        radial-gradient(1px 1px at 120px 50px, var(--pure-white), transparent),
+        radial-gradient(1px 1px at 180px 80px, var(--murphy-orange), transparent);
+    background-repeat: repeat;
+    background-size: 150px 80px;
+    animation: move-stars 300s linear infinite;
+}
+
+.stars3 {
+    background-image: 
+        radial-gradient(1px 1px at 10px 20px, var(--accent-cyan), transparent),
+        radial-gradient(1px 1px at 60px 40px, var(--star-blue), transparent),
+        radial-gradient(1px 1px at 100px 60px, var(--tars-blue), transparent);
+    background-repeat: repeat;
+    background-size: 100px 60px;
+    animation: move-stars 400s linear infinite;
+}
+
+@keyframes move-stars {
+    from { transform: translateX(0); }
+    to { transform: translateX(-200px); }
 } 

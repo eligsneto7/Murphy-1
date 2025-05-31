@@ -149,8 +149,8 @@ class ModernSkyRenderer:
         cos_dist = max(-1, min(1, cos_dist))
         return math.degrees(math.acos(cos_dist))
     
-    def get_top_celestial_objects(self, zenith_ra, zenith_dec, birth_datetime, latitude, longitude, count=8):
-        """Obtém as 8 estrelas mais relevantes próximas ao zênite (apenas estrelas com nomes próprios)"""
+    def get_top_celestial_objects(self, zenith_ra, zenith_dec, birth_datetime, latitude, longitude, count=25):
+        """Obtém as 25 estrelas mais relevantes próximas ao zênite para um céu mais realista"""
         objects = []
         
         # Apenas estrelas próximas ao zênite
@@ -164,27 +164,40 @@ class ModernSkyRenderer:
             
             self.stars_df['distance_to_zenith'] = distances
             
-            # Filtrar apenas estrelas com nomes próprios dentro de 90 graus
-            named_stars = self.stars_df[
-                (self.stars_df['proper_name'].notna()) & 
-                (self.stars_df['distance_to_zenith'] <= 90)
+            # Incluir TODAS as estrelas dentro de 90 graus, não apenas as com nomes
+            visible_stars = self.stars_df[
+                self.stars_df['distance_to_zenith'] <= 90
             ].copy()
             
-            if not named_stars.empty:
+            if not visible_stars.empty:
                 # Priorizar por: 1) Proximidade ao zênite, 2) Brilho
-                named_stars['priority'] = (
-                    (90 - named_stars['distance_to_zenith']) * 10 +  # Proximidade
-                    (6 - named_stars['magnitude']) * 5  # Brilho
+                visible_stars['priority'] = (
+                    (90 - visible_stars['distance_to_zenith']) * 10 +  # Proximidade
+                    (6 - visible_stars['magnitude']) * 5  # Brilho
                 )
                 
-                top_stars = named_stars.nlargest(count, 'priority')
+                # Separar estrelas com nomes das sem nomes
+                named_stars = visible_stars[visible_stars['proper_name'].notna()]
+                unnamed_stars = visible_stars[visible_stars['proper_name'].isna()]
+                
+                # Pegar as top 15 estrelas com nomes
+                top_named = named_stars.nlargest(15, 'priority') if not named_stars.empty else pd.DataFrame()
+                
+                # Pegar as top 10 estrelas sem nomes mais brilhantes
+                top_unnamed = unnamed_stars.nlargest(10, 'priority') if not unnamed_stars.empty else pd.DataFrame()
+                
+                # Combinar ambas
+                top_stars = pd.concat([top_named, top_unnamed])
                 
                 for _, star in top_stars.iterrows():
                     # Calcular cor mais realista baseada na magnitude e tipo espectral
                     color_info = self.calculate_realistic_star_color(star['magnitude'], star['spectral_type'])
                     
+                    # Nome da estrela ou designação genérica
+                    star_name = star['proper_name'] if pd.notna(star['proper_name']) else f"HIP {star.name}" if star.name else f"Estrela #{len(objects)+1}"
+                    
                     objects.append({
-                        'name': star['proper_name'],
+                        'name': star_name,
                         'type': 'star',
                         'ra': star['ra_degrees'],
                         'dec': star['dec_degrees'],
@@ -200,7 +213,7 @@ class ModernSkyRenderer:
         
         # Ordenar por prioridade
         objects.sort(key=lambda x: x.get('priority', 0), reverse=True)
-        return objects
+        return objects[:count]  # Limitar ao count solicitado
     
     def calculate_realistic_star_color(self, magnitude, spectral_type):
         """Calcula cor mais realista baseada na magnitude e tipo espectral com maior contraste"""
@@ -285,9 +298,9 @@ class ModernSkyRenderer:
     def generate_modern_sky_data(self, zenith_ra, zenith_dec, zenith_star, birth_datetime, latitude, longitude):
         """Gera dados para visualização moderna do céu - apenas estrelas"""
         try:
-            # Obter as 8 estrelas mais relevantes próximas ao zênite
+            # Obter as 25 estrelas mais relevantes próximas ao zênite
             top_objects = self.get_top_celestial_objects(
-                zenith_ra, zenith_dec, birth_datetime, latitude, longitude, 8
+                zenith_ra, zenith_dec, birth_datetime, latitude, longitude, 25
             )
             
             # Garantir que a estrela do zênite esteja sempre incluída
