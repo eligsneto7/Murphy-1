@@ -332,6 +332,9 @@ async def calculate(
         stellar_events = calculate_stellar_events(birth_date, birth_time)
         print(f"🚀 Stellar events calculated")
         
+        # DADOS DE ESTRELA COM LÓGICA CORRIGIDA
+        star_curiosities = generate_star_curiosities(result['name'], result['distance_ly'], result['magnitude'], result['spectral_class'])
+        
         result.update({
             'objects': objects,
             'stars': objects,  # Mantendo também para compatibilidade
@@ -360,24 +363,7 @@ async def calculate(
                         "dec_degrees": f"{result['dec_degrees']:.2f}",
                         "distance_to_zenith": f"{result.get('angular_distance', 0):.2f}",
                         "radial_velocity_description": _generate_velocity_description(result['name']),
-                        "curiosities": {
-                            "age_formatted": f"{result.get('age_billion_years', 5.0)} bilhões de anos",
-                            "birth_era": "Era Pré-Solar",
-                            "temporal_message": f"Esta estrela brilha há muito mais tempo que nosso Sol",
-                            "history": result.get('history', f"{result['name']} é uma estrela fascinante com características únicas"),
-                            "fun_facts": [
-                                f"Está a {result['distance_ly']} anos-luz de distância",
-                                f"Sua magnitude aparente é {result['magnitude']}",
-                                f"Pertence à classe espectral {result['spectral_class']}"
-                            ],
-                            "timeline_comparison": {
-                                "comparisons": [
-                                    f"Quando {result['name']} nasceu, a Terra ainda não existia",
-                                    f"A luz que vemos hoje saiu da estrela há {result['distance_ly']} anos"
-                                ],
-                                "era_when_light_started": f"Há {result['distance_ly']} anos"
-                            }
-                        }
+                        "curiosities": star_curiosities  # USAR FUNÇÃO CORRIGIDA
                     },
                     "birth_info": {
                         "date": birth_date,

@@ -206,22 +206,13 @@ def generate_velocity_description(star_name):
 
 # Importar função necessária
 def generate_star_curiosities(name, star_data):
-    """Placeholder - será importado do astro_data"""
-    return {
-        'age_formatted': f"{star_data['distance_ly'] * 10} milhões de anos",
-        'birth_era': "Era Pré-Solar",
-        'temporal_message': f"Esta estrela brilha há muito mais tempo que nosso Sol",
-        'history': f"{name} é uma estrela fascinante com características únicas",
-        'fun_facts': [
-            f"Está a {star_data['distance_ly']} anos-luz de distância",
-            f"Sua magnitude aparente é {star_data['magnitude']}",
-            f"Pertence à classe espectral {star_data['spectral_class']}"
-        ],
-        'timeline_comparison': {
-            'comparisons': [
-                f"Quando {name} nasceu, a Terra ainda não existia",
-                f"A luz que vemos hoje saiu da estrela há {star_data['distance_ly']} anos"
-            ],
-            'era_when_light_started': f"Há {star_data['distance_ly']} anos"
-        }
-    } 
+    """Gera curiosidades sobre a estrela usando lógica corrigida de idade"""
+    from app.astro_data import generate_star_curiosities as astro_curiosities
+    
+    # Usar a função corrigida do astro_data
+    return astro_curiosities(
+        name, 
+        star_data['distance_ly'], 
+        star_data['magnitude'], 
+        star_data['spectral_class']
+    ) 
