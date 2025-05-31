@@ -156,6 +156,11 @@ async def health_check():
     """Health check para Railway"""
     return {"status": "ok", "message": "Murphy-1 está funcionando!"}
 
+@app.get("/api/health")
+async def api_health_check():
+    """Health check alternativo para Railway compatibility"""
+    return {"status": "ok", "message": "Murphy-1 está funcionando!", "version": "1.0.0"}
+
 @app.get("/test")
 async def test_endpoint():
     """Teste básico"""
