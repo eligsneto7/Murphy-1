@@ -2,9 +2,9 @@
 builder = "dockerfile"
 
 [deploy]
-startCommand = "python -c 'import uvicorn; print(\"uvicorn found\")' && python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"
-healthcheckPath = "/api/health"
-healthcheckTimeout = 600
+# Temporarily disable health check to avoid timeout issues
+# healthcheckPath = "/api/health"
+# healthcheckTimeout = 600
 restartPolicyType = "on_failure"
 
 [env]

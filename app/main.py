@@ -24,12 +24,10 @@ app = FastAPI(title="Murphy-1", description="Explore as coordenadas do espaço-t
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-# Cache global para dados astronômicos
+# Lazy loading - criar objetos apenas quando necessário
+calculator = None
 star_catalog = None
-ts = None
-planets = None
 modern_sky_renderer = None
-astrology_calculator = AstrologyCalculator()
 
 class AstronomicalCalculator:
     def __init__(self):
@@ -668,10 +666,26 @@ class StarCatalog:
         else:
             return "Era Paleozoica ou anterior"
 
-# Inicializar objetos globais
-calculator = AstronomicalCalculator()
-star_catalog = StarCatalog()
-modern_sky_renderer = ModernSkyRenderer()
+def get_calculator():
+    """Get calculator instance with lazy loading"""
+    global calculator
+    if calculator is None:
+        calculator = AstronomicalCalculator()
+    return calculator
+
+def get_star_catalog():
+    """Get star catalog instance with lazy loading"""
+    global star_catalog
+    if star_catalog is None:
+        star_catalog = StarCatalog()
+    return star_catalog
+
+def get_modern_sky_renderer():
+    """Get modern sky renderer instance with lazy loading"""
+    global modern_sky_renderer
+    if modern_sky_renderer is None:
+        modern_sky_renderer = ModernSkyRenderer()
+    return modern_sky_renderer
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -693,27 +707,27 @@ async def calculate_cosmic_echo(
         birth_datetime = datetime.strptime(birth_datetime_str, "%Y-%m-%d %H:%M")
         
         # Obter coordenadas
-        latitude, longitude = calculator.get_coordinates_from_location(city, country)
+        latitude, longitude = get_calculator().get_coordinates_from_location(city, country)
         
         # Calcular coordenadas do zênite
-        zenith_ra, zenith_dec = calculator.calculate_zenith_coordinates(
+        zenith_ra, zenith_dec = get_calculator().calculate_zenith_coordinates(
             birth_datetime, latitude, longitude
         )
         
         # Encontrar estrela do zênite
-        zenith_star = star_catalog.find_zenith_star(zenith_ra, zenith_dec)
+        zenith_star = get_star_catalog().find_zenith_star(zenith_ra, zenith_dec)
         
         if not zenith_star:
             raise HTTPException(status_code=500, detail="Não foi possível encontrar uma estrela adequada")
         
         # Gerar dados para visualização moderna
-        modern_sky_data = modern_sky_renderer.generate_modern_sky_data(
+        modern_sky_data = get_modern_sky_renderer().generate_modern_sky_data(
             zenith_ra, zenith_dec, zenith_star, 
             birth_datetime, latitude, longitude
         )
         
         # Calcular perfil astrológico completo
-        astro_profile = astrology_calculator.generate_cosmic_profile(
+        astro_profile = AstrologyCalculator().generate_cosmic_profile(
             birth_datetime, latitude, longitude
         )
         
@@ -772,15 +786,15 @@ async def health_check():
         
         # Verificar calculator
         try:
-            status["components"]["calculator"] = "loaded" if calculator else "error"
+            status["components"]["calculator"] = "loaded" if get_calculator() else "error"
         except:
             status["components"]["calculator"] = "loading"
         
         # Verificar star_catalog
         try:
-            catalog_status = "loaded" if star_catalog and hasattr(star_catalog, 'stars_df') else "error"
-            if catalog_status == "loaded" and hasattr(star_catalog, 'stars_df'):
-                status["components"]["star_catalog"] = f"loaded ({len(star_catalog.stars_df)} stars)"
+            catalog_status = "loaded" if get_star_catalog() and hasattr(get_star_catalog(), 'stars_df') else "error"
+            if catalog_status == "loaded" and hasattr(get_star_catalog(), 'stars_df'):
+                status["components"]["star_catalog"] = f"loaded ({len(get_star_catalog().stars_df)} stars)"
             else:
                 status["components"]["star_catalog"] = "loading"
         except:
@@ -788,7 +802,7 @@ async def health_check():
         
         # Verificar modern_sky_renderer
         try:
-            status["components"]["sky_renderer"] = "loaded" if modern_sky_renderer else "error"
+            status["components"]["sky_renderer"] = "loaded" if get_modern_sky_renderer() else "error"
         except:
             status["components"]["sky_renderer"] = "loading"
         
