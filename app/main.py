@@ -49,6 +49,14 @@ print(f"🔍 Static directory: {BASE_DIR / 'static'}")
 print(f"🔍 Templates directory: {BASE_DIR / 'templates'}")
 print(f"🔍 Static files exist: {(BASE_DIR / 'static').exists()}")
 print(f"🔍 CSS exists: {(BASE_DIR / 'static' / 'css' / 'style.css').exists()}")
+print(f"🔍 Templates directory exists: {(BASE_DIR / 'templates').exists()}")
+print(f"🔍 Index.html exists: {(BASE_DIR / 'templates' / 'index.html').exists()}")
+
+# Listar arquivos no diretório de templates
+if (BASE_DIR / 'templates').exists():
+    print("🔍 Template files:")
+    for file in (BASE_DIR / 'templates').iterdir():
+        print(f"   - {file.name}")
 
 # Temporariamente desabilitado para usar fallback
 # app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
@@ -727,8 +735,53 @@ def get_modern_sky_renderer():
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Página inicial do aplicativo"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    """Página inicial do Murphy-1"""
+    try:
+        print(f"🏠 Home endpoint called")
+        print(f"🏠 Templates object: {templates}")
+        print(f"🏠 Templates directory: {templates.directory}")
+        print(f"🏠 Looking for index.html in: {BASE_DIR / 'templates' / 'index.html'}")
+        
+        # Verificar se o arquivo existe antes de tentar renderizar
+        template_path = BASE_DIR / 'templates' / 'index.html'
+        if not template_path.exists():
+            return HTMLResponse(content=f"""
+            <html>
+            <body>
+                <h1>Murphy-1 - Erro de Template</h1>
+                <p>Template index.html não encontrado!</p>
+                <p>Procurando em: {template_path}</p>
+                <p>BASE_DIR: {BASE_DIR}</p>
+                <p>Templates directory exists: {(BASE_DIR / 'templates').exists()}</p>
+                <p>Files in app directory:</p>
+                <ul>
+                    {"".join(f"<li>{f.name}</li>" for f in BASE_DIR.iterdir() if f.is_file())}
+                </ul>
+                <p>Directories in app:</p>
+                <ul>
+                    {"".join(f"<li>{d.name}/</li>" for d in BASE_DIR.iterdir() if d.is_dir())}
+                </ul>
+            </body>
+            </html>
+            """, status_code=500)
+        
+        return templates.TemplateResponse("index.html", {"request": request})
+    except Exception as e:
+        print(f"❌ Error in home endpoint: {str(e)}")
+        print(f"❌ Error type: {type(e)}")
+        import traceback
+        print(f"❌ Traceback: {traceback.format_exc()}")
+        
+        return HTMLResponse(content=f"""
+        <html>
+        <body>
+            <h1>Murphy-1 - Erro</h1>
+            <p>Erro ao carregar template: {str(e)}</p>
+            <p>Tipo: {type(e).__name__}</p>
+            <p>BASE_DIR: {BASE_DIR}</p>
+        </body>
+        </html>
+        """, status_code=500)
 
 @app.post("/calculate")
 async def calculate_cosmic_echo(
@@ -823,6 +876,50 @@ async def health_check():
 async def test_endpoint():
     """Endpoint de teste simples para debug"""
     return {"message": "Murphy-1 está funcionando! 🚀", "time": datetime.now().isoformat()}
+
+@app.get("/debug-structure")
+async def debug_structure():
+    """Debug endpoint para verificar estrutura de diretórios"""
+    import os
+    
+    result = {
+        "base_dir": str(BASE_DIR),
+        "cwd": os.getcwd(),
+        "app_dir_contents": [],
+        "templates_exists": (BASE_DIR / "templates").exists(),
+        "static_exists": (BASE_DIR / "static").exists(),
+        "templates_contents": [],
+        "static_contents": []
+    }
+    
+    # Listar conteúdo do diretório app
+    try:
+        for item in BASE_DIR.iterdir():
+            result["app_dir_contents"].append({
+                "name": item.name,
+                "is_dir": item.is_dir(),
+                "is_file": item.is_file()
+            })
+    except Exception as e:
+        result["app_dir_error"] = str(e)
+    
+    # Listar templates
+    try:
+        if (BASE_DIR / "templates").exists():
+            for item in (BASE_DIR / "templates").iterdir():
+                result["templates_contents"].append(item.name)
+    except Exception as e:
+        result["templates_error"] = str(e)
+    
+    # Listar static
+    try:
+        if (BASE_DIR / "static").exists():
+            for item in (BASE_DIR / "static").iterdir():
+                result["static_contents"].append(item.name)
+    except Exception as e:
+        result["static_error"] = str(e)
+    
+    return result
 
 # Fallback manual para arquivos estáticos se o mount não funcionar
 @app.get("/static/{file_path:path}")

@@ -8,6 +8,9 @@ COPY . .
 # Debug: Verify requirements.txt is now present
 RUN echo "=== Files in /app ===" && ls -la && echo "=== Checking requirements.txt ===" && cat requirements.txt
 
+# Debug: Verify templates directory
+RUN echo "=== Checking templates ===" && ls -la app/templates/ && echo "=== Checking static ===" && ls -la app/static/
+
 # Install dependencies
 RUN python -m pip install --upgrade pip
 RUN python -m pip install -r requirements.txt
