@@ -10,7 +10,8 @@ from app.astro_data import (
     calculate_moon_phase,
     calculate_tidal_influence,
     calculate_astrological_profile,
-    calculate_stellar_events
+    calculate_stellar_events,
+    generate_star_curiosities
 )
 from app.modern_sky_renderer import ModernSkyRenderer
 from app.zenith_calculator import find_zenith_star, load_hipparcos_data
