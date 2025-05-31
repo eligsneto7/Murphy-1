@@ -739,7 +739,6 @@ async def home(request: Request):
     try:
         print(f"🏠 Home endpoint called")
         print(f"🏠 Templates object: {templates}")
-        print(f"🏠 Templates directory: {templates.directory}")
         print(f"🏠 Looking for index.html in: {BASE_DIR / 'templates' / 'index.html'}")
         
         # Verificar se o arquivo existe antes de tentar renderizar
