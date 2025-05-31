@@ -131,6 +131,18 @@ async def geocode_location(city: str, country: str) -> tuple[float, float]:
         print("🔄 Usando coordenadas padrão de São Paulo")
         return -23.5505, -46.6333
 
+def _generate_velocity_description(star_name):
+    """Gera descrição da velocidade radial de forma simples"""
+    import random
+    descriptions = [
+        f"{star_name} está se aproximando lentamente",
+        f"{star_name} está se afastando gradualmente", 
+        f"{star_name} está se movendo perpendicularmente",
+        f"{star_name} está relativamente estática",
+        f"Movimento sutil em relação à Terra"
+    ]
+    return random.choice(descriptions)
+
 @app.post("/test-geocode")
 async def test_geocode(
     city: str = Form(...),
@@ -179,23 +191,52 @@ async def calculate(
         }
         
         # Skip sky rendering for now to avoid the error
+        # Preparar objetos para visualização
+        objects = [{
+            'name': result['name'],
+            'ra': result['ra_degrees'],
+            'dec': result['dec_degrees'],
+            'magnitude': result['magnitude'],
+            'isZenith': True,
+            'x': 0,
+            'y': 0,
+            'size': 25,
+            'color': '#FFD700',
+            'type': 'star'
+        }]
+        
+        # Adicionar estrelas da constelação se disponíveis
+        if 'constellation_stars' in result and len(result['constellation_stars']) > 0:
+            for i, const_star in enumerate(result['constellation_stars']):
+                if const_star['name'] != result['name']:  # Não duplicar a estrela principal
+                    # Calcular posição relativa simples
+                    ra_diff = const_star['ra'] - result['ra_degrees']
+                    dec_diff = const_star['dec'] - result['dec_degrees']
+                    
+                    # Escala para caber no canvas
+                    scale = 50
+                    x = ra_diff * scale
+                    y = dec_diff * scale
+                    
+                    objects.append({
+                        'name': const_star['name'],
+                        'ra': const_star['ra'],
+                        'dec': const_star['dec'],
+                        'magnitude': const_star['mag'],
+                        'isZenith': False,
+                        'x': x,
+                        'y': y,
+                        'size': max(5, 20 - const_star['mag'] * 3),  # Tamanho baseado na magnitude
+                        'color': '#FFFFFF',
+                        'type': 'star'
+                    })
+        
         result.update({
-            'stars': [
-                {
-                    'name': result['name'],
-                    'ra': result['ra_degrees'],
-                    'dec': result['dec_degrees'],
-                    'magnitude': result['magnitude'],
-                    'isZenith': True,
-                    'x': 0,
-                    'y': 0,
-                    'size': 20,
-                    'color': '#FFD700'
-                }
-            ],
+            'objects': objects,
+            'stars': objects,  # Mantendo também para compatibilidade
             'constellation_lines': [],
             'constellation_name': result.get('constellation', 'N/A'),
-            'total_stars': 1
+            'total_stars': len(objects)
         })
         
         return templates.TemplateResponse(
@@ -209,6 +250,10 @@ async def calculate(
                         "magnitude": result['magnitude'],
                         "distance_ly": result['distance_ly'],
                         "spectral_class": result['spectral_class'],
+                        "ra_degrees": f"{result['ra_degrees']:.2f}",
+                        "dec_degrees": f"{result['dec_degrees']:.2f}",
+                        "distance_to_zenith": f"{result.get('angular_distance', 0):.2f}",
+                        "radial_velocity_description": _generate_velocity_description(result['name']),
                         "curiosities": {
                             "age_formatted": f"{result.get('age_billion_years', 5.0)} bilhões de anos",
                             "birth_era": "Era Pré-Solar",
@@ -231,7 +276,8 @@ async def calculate(
                     "birth_info": {
                         "date": birth_date,
                         "time": birth_time,
-                        "location": f"{city}, {country}"
+                        "location": f"{city}, {country}",
+                        "coordinates": f"{latitude:.4f}°, {longitude:.4f}°"
                     },
                     "cosmic_message": f"No momento do seu nascimento, {result['name']} estava no zênite, brilhando diretamente sobre você. Esta estrela da constelação de {result.get('constellation', 'N/A')} será sua companheira cósmica eterna.",
                     "coincidences": {"has_coincidence": False}
