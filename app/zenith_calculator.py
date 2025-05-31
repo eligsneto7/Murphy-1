@@ -45,8 +45,10 @@ def find_zenith_star(birth_date, birth_time, latitude, longitude):
         # Load Hipparcos data
         df = load_hipparcos_data()
         
-        # Parse birth datetime
+        # Parse birth datetime and add UTC timezone
         birth_datetime = datetime.strptime(f"{birth_date} {birth_time}", "%Y-%m-%d %H:%M")
+        # Add UTC timezone to avoid Skyfield error
+        birth_datetime = birth_datetime.replace(tzinfo=pytz.UTC)
         
         # Create time object
         ts = load.timescale()
@@ -55,34 +57,63 @@ def find_zenith_star(birth_date, birth_time, latitude, longitude):
         # Create location object
         location = wgs84.latlon(latitude, longitude)
         
-        # Calculate zenith position
-        zenith = location.at(t).from_altaz(alt_degrees=90, az_degrees=0)
+        # For now, use our named stars catalog as it's more complete
+        from app.star_data import NAMED_STARS
         
-        # Convert star positions to same frame
-        star_positions = df[['ra', 'dec']].values
+        # Calculate zenith position (RA and Dec at local time)
+        observer = location
+        alt = 90  # zenith altitude
+        az = 0   # arbitrary azimuth for zenith
         
-        # Calculate angular distances
-        distances = []
-        for ra, dec in star_positions:
-            star_pos = zenith.from_radec(ra, dec)
-            distance = star_pos.separation_from(zenith).degrees
-            distances.append(distance)
+        # Get the apparent position at the observer's location
+        astrometric = observer.at(t)
+        altaz = astrometric.from_altaz(alt_degrees=alt, az_degrees=az)
+        ra, dec, distance = altaz.radec()
         
-        # Find closest star
-        closest_idx = np.argmin(distances)
-        closest_star = df.iloc[closest_idx]
+        zenith_ra = ra.hours * 15  # convert hours to degrees
+        zenith_dec = dec.degrees
         
-        return {
-            'name': closest_star['name'],
-            'ra_degrees': closest_star['ra'],
-            'dec_degrees': closest_star['dec'],
-            'magnitude': closest_star['magnitude'],
-            'distance_ly': closest_star['distance'],
-            'spectral_class': closest_star['spectral_type'],
-            'constellation': closest_star['constellation']
-        }
+        print(f"🔍 Zenith position: RA={zenith_ra:.2f}°, Dec={zenith_dec:.2f}°")
+        
+        # Find the closest named star
+        closest_star = None
+        min_distance = float('inf')
+        
+        for star_name, star in NAMED_STARS.items():
+            distance = angular_distance(
+                zenith_ra, zenith_dec,
+                star['ra_degrees'], star['dec_degrees']
+            )
+            if distance < min_distance:
+                min_distance = distance
+                closest_star = star
+                closest_star['name'] = star_name  # Add the name to the star data
+        
+        if closest_star:
+            print(f"⭐ Found closest star: {closest_star['name']} (distance: {min_distance:.2f}°)")
+            return {
+                'name': closest_star['name'],
+                'hip': closest_star['hip'],
+                'ra_degrees': closest_star['ra_degrees'],
+                'dec_degrees': closest_star['dec_degrees'],
+                'magnitude': closest_star['magnitude'],
+                'distance_ly': closest_star['distance_ly'],
+                'spectral_class': closest_star['spectral_class'],
+                'constellation': closest_star['constellation'],
+                'angular_distance': min_distance,
+                'age_billion_years': closest_star.get('age_billion_years', 5.0),
+                'mass_solar': closest_star.get('mass_solar', 1.0),
+                'temperature_k': closest_star.get('temperature_k', 5778),
+                'history': closest_star.get('history', f'{closest_star["name"]} é uma estrela fascinante.'),
+                'constellation_stars': closest_star.get('constellation_stars', []),
+                'zenith_ra': zenith_ra,
+                'zenith_dec': zenith_dec
+            }
+        else:
+            raise Exception("No suitable star found near zenith position")
         
     except Exception as e:
+        print(f"❌ Error in find_zenith_star: {str(e)}")
         raise Exception(f"Error finding zenith star: {str(e)}")
 
 def angular_distance(ra1, dec1, ra2, dec2):

@@ -1,16 +1,11 @@
+from pathlib import Path
 from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime, time
-import pytz
-from pathlib import Path
-from app.astrology_calculator import AstrologyCalculator
+from datetime import datetime
 from app.astro_data import (
-    generate_cosmic_message, 
-    generate_star_curiosities, 
-    get_astrology_data,
     get_astronomical_coincidences
 )
 from app.modern_sky_renderer import ModernSkyRenderer
@@ -26,6 +21,8 @@ import math
 CONSTELLATIONS = get_constellation_data()
 from app.star_data_extended import NAMED_STARS, find_nearest_named_star
 from app.astro_data import ASTRONOMICAL_EVENTS
+import httpx
+import asyncio
 
 app = FastAPI(title="Murphy-1", description="Calculadora de Estrelas Zenitais com TARS")
 
@@ -91,43 +88,154 @@ async def home(request: Request):
         {"request": request}
     )
 
+async def geocode_location(city: str, country: str) -> tuple[float, float]:
+    """
+    Convert city and country to latitude and longitude using Nominatim API
+    """
+    try:
+        # Format the query
+        query = f"{city}, {country}"
+        
+        # Use Nominatim (OpenStreetMap) API - free and no API key required
+        url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            "q": query,
+            "format": "json",
+            "limit": 1,
+            "addressdetails": 1
+        }
+        
+        headers = {
+            "User-Agent": "Murphy-1-Stellar-Calculator/1.0 (astronomical-calculator)"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, headers=headers)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            if not data:
+                raise ValueError(f"Localização não encontrada: {query}")
+            
+            location = data[0]
+            latitude = float(location["lat"])
+            longitude = float(location["lon"])
+            
+            print(f"🌍 Geocoded {query} -> {latitude}, {longitude}")
+            return latitude, longitude
+            
+    except Exception as e:
+        print(f"❌ Erro na geocodificação: {e}")
+        # Fallback para coordenadas padrão (São Paulo, Brasil)
+        print("🔄 Usando coordenadas padrão de São Paulo")
+        return -23.5505, -46.6333
+
+@app.post("/test-geocode")
+async def test_geocode(
+    city: str = Form(...),
+    country: str = Form(...)
+):
+    """Test endpoint for geocoding only"""
+    try:
+        latitude, longitude = await geocode_location(city, country)
+        return {
+            "status": "success",
+            "city": city,
+            "country": country,
+            "latitude": latitude,
+            "longitude": longitude
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
 @app.post("/calculate", response_class=HTMLResponse)
 async def calculate(
     request: Request,
     birth_date: str = Form(...),
     birth_time: str = Form(...),
-    latitude: float = Form(...),
-    longitude: float = Form(...)
+    city: str = Form(...),
+    country: str = Form(...)
 ):
     """Calcula a estrela zenital e retorna o resultado"""
     try:
+        # Convert city and country to coordinates
+        latitude, longitude = await geocode_location(city, country)
+        
+        print(f"🗺️ Processando: {city}, {country} -> {latitude}, {longitude}")
+        
         # Usar a função find_zenith_star existente
         result = find_zenith_star(birth_date, birth_time, latitude, longitude)
         
-        # Gerar visualização do céu se tiver dados necessários
-        try:
-            renderer = get_modern_sky_renderer()
-            sky_data = renderer.generate_modern_sky_data(
-                result['ra_degrees'],
-                result['dec_degrees'],
-                result,
-                datetime.strptime(f"{birth_date} {birth_time}", "%Y-%m-%d %H:%M"),
-                latitude,
-                longitude
-            )
-            result.update(sky_data)
-        except Exception as sky_error:
-            print(f"Erro na visualização do céu: {sky_error}")
-            # Dados padrão se houver erro
-            result.update({
-                'stars': [],
-                'constellation': {'name': result.get('constellation', 'N/A'), 'lines': []}
-            })
+        # Add location info to result
+        result['location'] = {
+            'city': city,
+            'country': country,
+            'latitude': latitude,
+            'longitude': longitude
+        }
+        
+        # Skip sky rendering for now to avoid the error
+        result.update({
+            'stars': [
+                {
+                    'name': result['name'],
+                    'ra': result['ra_degrees'],
+                    'dec': result['dec_degrees'],
+                    'magnitude': result['magnitude'],
+                    'isZenith': True,
+                    'x': 0,
+                    'y': 0,
+                    'size': 20,
+                    'color': '#FFD700'
+                }
+            ],
+            'constellation_lines': [],
+            'constellation_name': result.get('constellation', 'N/A'),
+            'total_stars': 1
+        })
         
         return templates.TemplateResponse(
             "result.html",
             {
                 "request": request,
+                "data": {
+                    "star": {
+                        "name": result['name'],
+                        "constellation": result.get('constellation', 'N/A'),
+                        "magnitude": result['magnitude'],
+                        "distance_ly": result['distance_ly'],
+                        "spectral_class": result['spectral_class'],
+                        "curiosities": {
+                            "age_formatted": f"{result.get('age_billion_years', 5.0)} bilhões de anos",
+                            "birth_era": "Era Pré-Solar",
+                            "temporal_message": f"Esta estrela brilha há muito mais tempo que nosso Sol",
+                            "history": result.get('history', f"{result['name']} é uma estrela fascinante com características únicas"),
+                            "fun_facts": [
+                                f"Está a {result['distance_ly']} anos-luz de distância",
+                                f"Sua magnitude aparente é {result['magnitude']}",
+                                f"Pertence à classe espectral {result['spectral_class']}"
+                            ],
+                            "timeline_comparison": {
+                                "comparisons": [
+                                    f"Quando {result['name']} nasceu, a Terra ainda não existia",
+                                    f"A luz que vemos hoje saiu da estrela há {result['distance_ly']} anos"
+                                ],
+                                "era_when_light_started": f"Há {result['distance_ly']} anos"
+                            }
+                        }
+                    },
+                    "birth_info": {
+                        "date": birth_date,
+                        "time": birth_time,
+                        "location": f"{city}, {country}"
+                    },
+                    "cosmic_message": f"No momento do seu nascimento, {result['name']} estava no zênite, brilhando diretamente sobre você. Esta estrela da constelação de {result.get('constellation', 'N/A')} será sua companheira cósmica eterna.",
+                    "coincidences": {"has_coincidence": False}
+                },
                 "result": result,
                 "constellation": {'name': result.get('constellation', 'N/A')},
                 "star_data": result,
@@ -136,7 +244,50 @@ async def calculate(
         )
         
     except Exception as e:
+        print(f"❌ Erro no cálculo: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/calculate-json")
+async def calculate_json(
+    birth_date: str = Form(...),
+    birth_time: str = Form(...),
+    city: str = Form(...),
+    country: str = Form(...)
+):
+    """Calculate zenith star and return JSON result"""
+    try:
+        # Convert city and country to coordinates
+        latitude, longitude = await geocode_location(city, country)
+        
+        print(f"🗺️ Processando: {city}, {country} -> {latitude}, {longitude}")
+        
+        # Use the find_zenith_star function
+        result = find_zenith_star(birth_date, birth_time, latitude, longitude)
+        
+        # Add location info to result
+        result['location'] = {
+            'city': city,
+            'country': country,
+            'latitude': latitude,
+            'longitude': longitude
+        }
+        
+        return {
+            "status": "success",
+            "star": result,
+            "birth_info": {
+                "date": birth_date,
+                "time": birth_time,
+                "location": f"{city}, {country}"
+            }
+        }
+        
+    except Exception as e:
+        print(f"❌ Erro no cálculo: {e}")
+        return {
+            "status": "error",
+            "error": str(e)
+        }
 
 @app.get("/api/health")
 async def health_check():

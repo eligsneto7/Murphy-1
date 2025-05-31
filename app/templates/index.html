@@ -112,8 +112,23 @@
 {% block extra_scripts %}
 <script>
 document.getElementById('cosmic-form').addEventListener('submit', function(e) {
-    // Mostrar overlay de loading
-    document.getElementById('loading-overlay').classList.remove('hidden');
+    // Mostrar overlay de loading com mensagem específica para geocodificação
+    const overlay = document.getElementById('loading-overlay');
+    const statusEl = document.querySelector('.loading-status');
+    
+    // Update status text for geocoding process
+    statusEl.textContent = 'Convertendo localização em coordenadas estelares...';
+    
+    overlay.classList.remove('hidden');
+    
+    // Update status during the process
+    setTimeout(() => {
+        statusEl.textContent = 'Calculando posição das estrelas...';
+    }, 2000);
+    
+    setTimeout(() => {
+        statusEl.textContent = 'Atravessando dimensões temporais...';
+    }, 4000);
 });
 
 // TARS Animation
@@ -125,12 +140,16 @@ const tarsQuotes = [
     '"Murphy... a lei de Murphy não é uma profecia."',
     '"Análise de coordenadas estelares... processando."',
     '"Tempo é uma dimensão relativa, Cooper."',
-    '"Dados coletados. Navegação estelar disponível."'
+    '"Dados coletados. Navegação estelar disponível."',
+    '"Geocodificação iniciada. Convertendo Terra em cosmos."',
+    '"Sua estrela-guia aguarda do outro lado do tempo."'
 ];
 
+let currentQuoteIndex = 0;
+
 setInterval(() => {
-    const randomQuote = tarsQuotes[Math.floor(Math.random() * tarsQuotes.length)];
-    tarsDialogue.textContent = randomQuote;
+    currentQuoteIndex = (currentQuoteIndex + 1) % tarsQuotes.length;
+    tarsDialogue.textContent = tarsQuotes[currentQuoteIndex];
 }, 8000);
 
 // TARS hover effect
@@ -140,6 +159,22 @@ tarsRobot.addEventListener('mouseenter', () => {
 
 tarsRobot.addEventListener('mouseleave', () => {
     tarsRobot.style.transform = 'translateY(0) rotateY(0)';
+});
+
+// Enhanced form validation
+const form = document.getElementById('cosmic-form');
+const inputs = form.querySelectorAll('input[required]');
+
+inputs.forEach(input => {
+    input.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+            this.style.borderColor = '#e74c3c';
+            this.style.boxShadow = '0 0 10px rgba(231, 76, 60, 0.3)';
+        } else {
+            this.style.borderColor = 'var(--accent-cyan)';
+            this.style.boxShadow = '0 0 10px rgba(93, 173, 226, 0.3)';
+        }
+    });
 });
 </script>
 {% endblock %} 

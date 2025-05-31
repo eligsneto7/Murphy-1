@@ -240,106 +240,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- Seção de Astrologia -->
-    <div class="astrology-section">
-        <div class="astrology-container">
-            <h2 class="section-title">SEU PERFIL CÓSMICO</h2>
-            <p class="section-subtitle">Influências astrológicas no momento do seu nascimento</p>
-            
-            <!-- Mensagem Cósmica Personalizada -->
-            <div class="cosmic-profile-message">
-                <div class="message-content">
-                    <p class="cosmic-text">{{ data.astrology.cosmic_message }}</p>
-                </div>
-            </div>
-            
-            <!-- Grid de Informações Astrológicas -->
-            <div class="astrology-grid">
-                <!-- Signo Solar -->
-                <div class="astro-card primary">
-                    <div class="astro-header">
-                        <div class="astro-symbol">{{ data.astrology.sun_sign.symbol }}</div>
-                        <h3>SIGNO SOLAR</h3>
-                    </div>
-                    <div class="astro-content">
-                        <h4>{{ data.astrology.sun_sign.name }}</h4>
-                        <p class="astro-element">Elemento: {{ data.astrology.sun_sign.element }}</p>
-                        <p class="astro-quality">Qualidade: {{ data.astrology.sun_sign.quality }}</p>
-                        <div class="astro-traits">
-                            <p><strong>Personalidade:</strong> {{ data.astrology.personality_traits.personality }}</p>
-                            <p><strong>Forças:</strong> {{ data.astrology.personality_traits.strengths }}</p>
-                            <p><strong>Desafios:</strong> {{ data.astrology.personality_traits.challenges }}</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Ascendente -->
-                <div class="astro-card secondary">
-                    <div class="astro-header">
-                        <div class="astro-symbol">{{ data.astrology.ascendant.symbol }}</div>
-                        <h3>ASCENDENTE</h3>
-                    </div>
-                    <div class="astro-content">
-                        <h4>{{ data.astrology.ascendant.name }}</h4>
-                        <p class="astro-element">Elemento: {{ data.astrology.ascendant.element }}</p>
-                        <p class="astro-description">Sua máscara social e primeira impressão que causa no mundo</p>
-                        <p class="astro-meaning">{{ data.astrology.birth_chart_summary.outer_expression }}</p>
-                    </div>
-                </div>
-                
-                <!-- Fase Lunar -->
-                <div class="astro-card tertiary">
-                    <div class="astro-header">
-                        <div class="astro-symbol lunar">{{ data.astrology.lunar_phase.symbol }}</div>
-                        <h3>FASE LUNAR</h3>
-                    </div>
-                    <div class="astro-content">
-                        <h4>{{ data.astrology.lunar_phase.name }}</h4>
-                        <p class="astro-description">{{ data.astrology.lunar_phase.meaning }}</p>
-                        <p class="astro-meaning">A energia lunar influencia seus instintos e emoções mais profundas</p>
-                    </div>
-                </div>
-                
-                <!-- Elemento Dominante -->
-                <div class="astro-card quaternary">
-                    <div class="astro-header">
-                        <div class="astro-symbol element">
-                            {% if data.astrology.dominant_element == 'Fogo' %}🔥
-                            {% elif data.astrology.dominant_element == 'Terra' %}🌍
-                            {% elif data.astrology.dominant_element == 'Ar' %}💨
-                            {% elif data.astrology.dominant_element == 'Água' %}💧
-                            {% endif %}
-                        </div>
-                        <h3>ELEMENTO DOMINANTE</h3>
-                    </div>
-                    <div class="astro-content">
-                        <h4>{{ data.astrology.dominant_element }}</h4>
-                        <p class="astro-meaning">{{ data.astrology.birth_chart_summary.elemental_focus }}</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Resumo do Mapa Astral -->
-            <div class="birth-chart-summary">
-                <h3>RESUMO DO SEU MAPA ASTRAL</h3>
-                <div class="chart-summary-grid">
-                    <div class="summary-item">
-                        <h4>Identidade Central</h4>
-                        <p>{{ data.astrology.birth_chart_summary.core_identity }}</p>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Expressão Externa</h4>
-                        <p>{{ data.astrology.birth_chart_summary.outer_expression }}</p>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Foco Elemental</h4>
-                        <p>{{ data.astrology.birth_chart_summary.elemental_focus }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <div class="result-actions">
@@ -354,7 +254,7 @@
 
 {% block extra_scripts %}
 <script src="/static/js/modern-sky-viewer.js"></script>
-<script type="application/json" id="sky-data">{{ data.modern_sky_data | tojson | safe }}</script>
+<script type="application/json" id="sky-data">{{ result | tojson | safe }}</script>
 <script>
 // Dados do céu para o visualizador
 const skyData = JSON.parse(document.getElementById('sky-data').textContent);
@@ -437,44 +337,10 @@ function showObjectInfo(obj) {
             </div>
             <div class="detail-item">
                 <span class="detail-label">Magnitude:</span>
-                <span class="detail-value">${obj.magnitude.toFixed(1)}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Distância do Zênite:</span>
-                <span class="detail-value">${obj.distance_to_zenith.toFixed(1)}°</span>
-            </div>
-    `;
-    
-    if (obj.temperature) {
-        detailsHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Temperatura:</span>
-                <span class="detail-value">${obj.temperature.toLocaleString()}K</span>
-            </div>
-        `;
-    }
-    
-    if (obj.spectral_type && obj.spectral_type !== 'Planet' && obj.spectral_type !== 'Satellite') {
-        detailsHTML += `
-            <div class="detail-item">
-                <span class="detail-label">Tipo Espectral:</span>
-                <span class="detail-value">${obj.spectral_type}</span>
-            </div>
-        `;
-    }
-    
-    detailsHTML += `
-            <div class="detail-item full-width">
-                <span class="detail-label">Coordenadas:</span>
-                <span class="detail-value">
-                    RA: ${obj.ra.toFixed(2)}° | Dec: ${obj.dec.toFixed(2)}°
-                </span>
+                <span class="detail-value">${obj.magnitude ? obj.magnitude.toFixed(2) : 'N/A'}</span>
             </div>
         </div>
     `;
-    
-    // Adicionar informação contextual
-    detailsHTML += `<div class="object-context">${getObjectContext(obj)}</div>`;
     
     detailsElement.innerHTML = detailsHTML;
     
@@ -483,33 +349,13 @@ function showObjectInfo(obj) {
 }
 
 function getObjectTypeLabel(type) {
-    switch(type) {
-        case 'star': return 'Estrela';
-        default: return 'Objeto Celeste';
-    }
+    const typeLabels = {
+        'star': 'Estrela',
+        'planet': 'Planeta',
+        'moon': 'Lua',
+        'zenith': 'Estrela Zenital'
+    };
+    return typeLabels[type] || 'Objeto Celeste';
 }
-
-function getObjectContext(obj) {
-    if (obj.type === 'star') {
-        if (obj.temperature) {
-            if (obj.temperature > 10000) {
-                return "⭐ Estrela muito quente e jovem, com intensa radiação azul.";
-            } else if (obj.temperature > 6000) {
-                return "☀️ Estrela similar ao nosso Sol, com temperatura moderada.";
-            } else {
-                return "🔴 Estrela mais fria e avermelhada, possivelmente mais antiga.";
-            }
-        }
-        return "✨ Uma das estrelas mais brilhantes visíveis da Terra.";
-    }
-    return '';
-}
-
-// Cleanup ao sair da página
-window.addEventListener('beforeunload', () => {
-    if (skyViewer) {
-        skyViewer.destroy();
-    }
-});
 </script>
 {% endblock %}
