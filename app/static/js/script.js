@@ -29,6 +29,9 @@ function initializeApp() {
 
 // ===== TARS COMPANION SETUP =====
 function setupTARSCompanion() {
+    // Skip if enhanced TARS is active
+    if (document.querySelector('.tars-glow-ring')) return;
+    
     const tarsRobot = document.querySelector('.tars-robot');
     const tarsDialogue = document.querySelector('.tars-dialogue p');
     
@@ -1158,7 +1161,10 @@ function enhanceTARSCompanion() {
 
 // Replace original TARS setup with enhanced version
 document.addEventListener('DOMContentLoaded', () => {
-    enhanceTARSCompanion();
+    // Only run enhanced TARS if the original hasn't been set up
+    if (!document.querySelector('.tars-glow-ring')) {
+        enhanceTARSCompanion();
+    }
 });
 
 // ===== ENHANCED LOADING EXPERIENCE =====
@@ -1261,11 +1267,15 @@ function enhanceFormInteractions() {
             input.style.boxShadow = 'none';
         });
     });
+}
+
+// Enhanced submit animation that works with existing form handler
+function addSubmitAnimation() {
+    const form = document.getElementById('cosmic-form');
+    if (!form) return;
     
-    // Enhanced submit animation
+    // Add animation before existing submit handler
     form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
         // Create ripple effect
         const ripple = document.createElement('div');
         ripple.style.cssText = `
@@ -1291,20 +1301,17 @@ function enhanceFormInteractions() {
             easing: 'ease-out'
         }).onfinish = () => ripple.remove();
         
-        // Show enhanced loading
+        // Enhanced loading experience will be triggered by existing handler
         setTimeout(() => {
-            showLoadingOverlay();
             enhanceLoadingExperience();
-            
-            // Submit form after animation
-            setTimeout(() => {
-                form.submit();
-            }, 500);
-        }, 300);
-    });
+        }, 100);
+        
+        // Let the form submit naturally through existing handler
+    }, true); // Use capture phase to run before existing handler
 }
 
 // Initialize enhancements when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     enhanceFormInteractions();
+    addSubmitAnimation();
 }); 
