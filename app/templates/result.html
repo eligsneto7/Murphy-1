@@ -41,7 +41,7 @@
                     <!-- Controles de Visualização -->
                     <div class="view-controls">
                         <div class="control-group">
-                            <button id="reset-view" class="control-button">Resetar Vista</button>
+                            <!-- Removido o botão Resetar Vista -->
                         </div>
                     </div>
                 </div>
@@ -259,6 +259,22 @@
 // Dados do céu para o visualizador
 const skyData = JSON.parse(document.getElementById('sky-data').textContent);
 
+// Verificar e corrigir estrutura dos dados
+console.log('Sky Data:', skyData);
+
+// Garantir que temos a estrutura correta para o visualizador
+const visualizerData = {
+    objects: skyData.objects || [],
+    constellation_lines: skyData.constellation_lines || [],
+    constellation_name: skyData.constellation_name || 'N/A',
+    zenith: {
+        ra: skyData.zenith_ra || 0,
+        dec: skyData.zenith_dec || 0
+    }
+};
+
+console.log('Visualizer Data:', visualizerData);
+
 // Variáveis globais
 let skyViewer = null;
 let objectInfoPanel = null;
@@ -272,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Inicializar visualizador
-    skyViewer = initializeModernSkyViewer('modern-sky-canvas', skyData);
+    skyViewer = initializeModernSkyViewer('modern-sky-canvas', visualizerData);
     
     // Configurar painel de informações
     setupInfoPanel();
@@ -294,16 +310,14 @@ function setupInfoPanel() {
 }
 
 function setupControls() {
-    const resetButton = document.getElementById('reset-view');
-    
     // Botão de reset
-    resetButton.addEventListener('click', () => {
-        if (skyViewer) {
-            skyViewer.state.targetZoom = 1.0;
-            skyViewer.state.targetPanX = 0;
-            skyViewer.state.targetPanY = 0;
-        }
-    });
+    // resetButton.addEventListener('click', () => {
+    //     if (skyViewer) {
+    //         skyViewer.state.targetZoom = 1.0;
+    //         skyViewer.state.targetPanX = 0;
+    //         skyViewer.state.targetPanY = 0;
+    //     }
+    // });
 }
 
 function setupCustomEvents() {
