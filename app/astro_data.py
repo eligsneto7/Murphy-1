@@ -750,56 +750,113 @@ def calculate_astrological_profile(birth_date, birth_time, latitude, longitude):
         
         for name, planet in planets.items():
             planet.compute(observer)
-            constellation = planet.constellation[1] if hasattr(planet, 'constellation') else 'Desconhecida'
+            
+            # Obter constelação de forma mais robusta
+            try:
+                if hasattr(planet, 'constellation') and planet.constellation:
+                    # Tentar diferentes formatos de constellation
+                    if isinstance(planet.constellation, tuple) and len(planet.constellation) > 1:
+                        constellation = planet.constellation[1]
+                    elif isinstance(planet.constellation, str):
+                        constellation = planet.constellation
+                    else:
+                        constellation = str(planet.constellation)
+                else:
+                    # Fallback: calcular constelação baseada na posição
+                    constellation = _get_constellation_from_position(planet.ra, planet.dec)
+            except:
+                constellation = _get_constellation_from_position(planet.ra, planet.dec)
+            
+            # Calcular visibilidade mais precisa
+            altitude_degrees = math.degrees(planet.alt)
+            is_visible = altitude_degrees > 0  # Acima do horizonte
+            
+            # Considerar crepúsculo para melhor precisão
+            sun = ephem.Sun()
+            sun.compute(observer)
+            sun_altitude = math.degrees(sun.alt)
+            
+            # Ajustar visibilidade baseada na posição do sol
+            if name != 'Sol':
+                if sun_altitude > -6:  # Sol ainda não está baixo o suficiente
+                    if name in ['Mercúrio', 'Vênus']:
+                        # Planetas interiores podem ser visíveis perto do horizonte
+                        is_visible = is_visible and altitude_degrees > 5
+                    else:
+                        # Outros planetas precisam estar bem acima do horizonte
+                        is_visible = is_visible and altitude_degrees > 15
+                else:
+                    # Céu escuro - critério mais relaxado
+                    is_visible = altitude_degrees > 0
+            else:
+                # Sol sempre "visível" se acima do horizonte
+                is_visible = altitude_degrees > 0
             
             planets_data[name] = {
                 'constellation': constellation,
-                'altitude': round(math.degrees(planet.alt), 1),
+                'altitude': round(altitude_degrees, 1),
                 'azimuth': round(math.degrees(planet.az), 1),
-                'visible': planet.alt > 0
+                'visible': is_visible
             }
         
-        # Determinar signo solar (simplificado baseado na data)
+        # CORRIGIR CÁLCULO DO SIGNO SOLAR - usar mês e dia corretos
         birth_dt = datetime.strptime(birth_date, "%Y-%m-%d")
-        day_of_year = birth_dt.timetuple().tm_yday
+        month = birth_dt.month
+        day = birth_dt.day
         
-        zodiac_signs = [
-            (20, "♈ Áries", "Energia de fogo, liderança natural, pioneirismo"),
-            (49, "♉ Touro", "Estabilidade terrena, determinação, sensualidade"),
-            (80, "♊ Gêmeos", "Versatilidade mental, comunicação, curiosidade"),
-            (111, "♋ Câncer", "Intuição emocional, proteção, sensibilidade"),
-            (142, "♌ Leão", "Criatividade radiante, generosidade, liderança"),
-            (173, "♍ Virgem", "Precisão analítica, serviço, perfeição"),
-            (204, "♎ Libra", "Harmonia social, beleza, diplomacia"),
-            (234, "♏ Escorpião", "Intensidade transformadora, mistério, paixão"),
-            (265, "♐ Sagitário", "Expansão filosófica, aventura, sabedoria"),
-            (296, "♑ Capricórnio", "Ambição estrutural, responsabilidade, tradição"),
-            (326, "♒ Aquário", "Inovação humanitária, independência, visão futura"),
-            (356, "♓ Peixes", "Intuição oceânica, compaixão, espiritualidade"),
-            (366, "♈ Áries", "Energia de fogo, liderança natural, pioneirismo")  # Wraparound
-        ]
-        
+        # Signos zodiacais com datas corretas (aproximadas)
         sun_sign = "♈ Áries"
         sun_description = "Energia cósmica única"
         
-        for day_limit, sign, description in zodiac_signs:
-            if day_of_year <= day_limit:
-                sun_sign = sign
-                sun_description = description
-                break
+        if (month == 3 and day >= 21) or (month == 4 and day <= 19):
+            sun_sign = "♈ Áries"
+            sun_description = "Energia de fogo, liderança natural, pioneirismo"
+        elif (month == 4 and day >= 20) or (month == 5 and day <= 20):
+            sun_sign = "♉ Touro"
+            sun_description = "Estabilidade terrena, determinação, sensualidade"
+        elif (month == 5 and day >= 21) or (month == 6 and day <= 20):
+            sun_sign = "♊ Gêmeos"
+            sun_description = "Versatilidade mental, comunicação, curiosidade"
+        elif (month == 6 and day >= 21) or (month == 7 and day <= 22):
+            sun_sign = "♋ Câncer"
+            sun_description = "Intuição emocional, proteção, sensibilidade"
+        elif (month == 7 and day >= 23) or (month == 8 and day <= 22):
+            sun_sign = "♌ Leão"
+            sun_description = "Criatividade radiante, generosidade, liderança"
+        elif (month == 8 and day >= 23) or (month == 9 and day <= 22):
+            sun_sign = "♍ Virgem"
+            sun_description = "Precisão analítica, serviço, perfeição"
+        elif (month == 9 and day >= 23) or (month == 10 and day <= 22):
+            sun_sign = "♎ Libra"
+            sun_description = "Harmonia social, beleza, diplomacia"
+        elif (month == 10 and day >= 23) or (month == 11 and day <= 21):
+            sun_sign = "♏ Escorpião"
+            sun_description = "Intensidade transformadora, mistério, paixão"
+        elif (month == 11 and day >= 22) or (month == 12 and day <= 21):
+            sun_sign = "♐ Sagitário"
+            sun_description = "Expansão filosófica, aventura, sabedoria"
+        elif (month == 12 and day >= 22) or (month == 1 and day <= 19):
+            sun_sign = "♑ Capricórnio"
+            sun_description = "Ambição estrutural, responsabilidade, tradição"
+        elif (month == 1 and day >= 20) or (month == 2 and day <= 18):
+            sun_sign = "♒ Aquário"
+            sun_description = "Inovação humanitária, independência, visão futura"
+        elif (month == 2 and day >= 19) or (month == 3 and day <= 20):
+            sun_sign = "♓ Peixes"
+            sun_description = "Intuição oceânica, compaixão, espiritualidade"
         
-        # Elemento e qualidade
+        # Elemento e qualidade corretos
         elements = {
-            '♈': ('Fogo', 'Iniciação'),
+            '♈': ('Fogo', 'Cardial'),
             '♌': ('Fogo', 'Fixo'),
             '♐': ('Fogo', 'Mutável'),
             '♉': ('Terra', 'Fixo'),
             '♍': ('Terra', 'Mutável'),
-            '♑': ('Terra', 'Iniciação'),
+            '♑': ('Terra', 'Cardial'),
             '♊': ('Ar', 'Mutável'),
-            '♎': ('Ar', 'Iniciação'),
+            '♎': ('Ar', 'Cardial'),
             '♒': ('Ar', 'Fixo'),
-            '♋': ('Água', 'Iniciação'),
+            '♋': ('Água', 'Cardial'),
             '♏': ('Água', 'Fixo'),
             '♓': ('Água', 'Mutável')
         }
@@ -807,13 +864,20 @@ def calculate_astrological_profile(birth_date, birth_time, latitude, longitude):
         sign_symbol = sun_sign.split()[0]
         element, quality = elements.get(sign_symbol, ('Éter', 'Transcendente'))
         
+        # Calcular planeta dominante (mais alto no céu)
+        visible_planets = {k: v for k, v in planets_data.items() if v['visible']}
+        if visible_planets:
+            dominant_planet = max(visible_planets.keys(), key=lambda p: visible_planets[p]['altitude'])
+        else:
+            dominant_planet = max(planets_data.keys(), key=lambda p: planets_data[p]['altitude'])
+        
         return {
             'sun_sign': sun_sign,
             'sun_description': sun_description,
             'element': element,
             'quality': quality,
             'planets': planets_data,
-            'dominant_planet': max(planets_data.keys(), key=lambda p: planets_data[p]['altitude']),
+            'dominant_planet': dominant_planet,
             'astrological_summary': f"Nascido sob {sun_sign}, com elemento {element} dominante, você carrega a essência cósmica da {quality.lower()}."
         }
         
@@ -828,6 +892,38 @@ def calculate_astrological_profile(birth_date, birth_time, latitude, longitude):
             'dominant_planet': 'Estrela Zenital',
             'astrological_summary': "Sua essência cósmica vai além dos signos tradicionais, conectando-se diretamente às estrelas."
         }
+
+def _get_constellation_from_position(ra, dec):
+    """Determina constelação aproximada baseada em RA/Dec"""
+    # Converter radianos para graus
+    ra_deg = math.degrees(ra)
+    dec_deg = math.degrees(dec)
+    
+    # Constelações zodiacais aproximadas por RA
+    constellations_by_ra = [
+        (0, 30, "Peixes"),
+        (30, 60, "Áries"),
+        (60, 90, "Touro"),
+        (90, 120, "Gêmeos"),
+        (120, 150, "Câncer"),
+        (150, 180, "Leão"),
+        (180, 210, "Virgem"),
+        (210, 240, "Libra"),
+        (240, 270, "Escorpião"),
+        (270, 300, "Sagitário"),
+        (300, 330, "Capricórnio"),
+        (330, 360, "Aquário")
+    ]
+    
+    # Ajustar RA para 0-360
+    ra_deg = ra_deg % 360
+    
+    # Encontrar constelação
+    for ra_start, ra_end, constellation in constellations_by_ra:
+        if ra_start <= ra_deg < ra_end:
+            return constellation
+    
+    return "Desconhecida"
 
 # ===== EVENTOS ESTELARES HISTÓRICOS =====
 def calculate_stellar_events(birth_date, birth_time):
