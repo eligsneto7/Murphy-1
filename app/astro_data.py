@@ -234,7 +234,7 @@ def generate_cosmic_message(zenith_star):
 
 
 def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class):
-    """Gera curiosidades sobre a estrela usando dados precisos"""
+    """Gera fatos interessantes sobre uma estrela específica"""
     from app.star_data_extended import NAMED_STARS
     
     # Se temos dados precisos para esta estrela
@@ -245,6 +245,8 @@ def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class)
         history = star_data.get('history', f"{star_name} é uma estrela fascinante da classe {spectral_class}.")
         temperature = star_data.get('temperature_k', estimate_temperature_from_spectral(spectral_class))
         mass = star_data.get('mass_solar', estimate_mass_from_magnitude(magnitude))
+        radial_velocity = star_data.get('radial_velocity_km_s', None)
+        luminosity_solar = star_data.get('luminosity_solar', estimate_luminosity_from_temp_and_mass(temperature, mass))
     else:
         # Estimativas para estrelas genéricas
         age_billion_years = estimate_age_from_spectral(spectral_class)
@@ -252,6 +254,8 @@ def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class)
         history = f"{star_name} é uma estrela fascinante da classe {spectral_class}."
         temperature = estimate_temperature_from_spectral(spectral_class)
         mass = estimate_mass_from_magnitude(magnitude)
+        radial_velocity = None
+        luminosity_solar = estimate_luminosity_from_temp_and_mass(temperature, mass)
     
     # Calcular idade em diferentes formatos
     age_millions = age_billion_years * 1000 if age_billion_years is not None else None
@@ -275,7 +279,7 @@ def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class)
     else:
         birth_era = "Era Moderna (estrela jovem)"
     
-    # Mensagens temporais baseadas na idade real
+    # Mensagens temporais baseadas na idade real (CORRIGIDO)
     temporal_messages = []
     if age_billion_years is not None:
         if age_billion_years < 0.1:
@@ -283,7 +287,7 @@ def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class)
         elif age_billion_years < 1:
             temporal_messages.append(f"{star_name} nasceu quando a vida já existia na Terra")
         elif age_billion_years < 4.6:
-            temporal_messages.append(f"{star_name} é mais jovem que nosso Sol")
+            temporal_messages.append(f"{star_name} é mais jovem que nosso Sol")  # CORRIGIDO
         elif age_billion_years > 10:
             temporal_messages.append(f"{star_name} é uma das estrelas mais antigas da galáxia")
         else:
@@ -325,6 +329,30 @@ def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class)
         else:
             facts.append(f"Massa similar ao Sol: {mass:.1f} massas solares")
     
+    # Fatos sobre luminosidade (NOVO)
+    if luminosity_solar:
+        if luminosity_solar > 10000:
+            facts.append(f"Brilha {luminosity_solar:,.0f} vezes mais que o Sol")
+        elif luminosity_solar > 100:
+            facts.append(f"É {luminosity_solar:,.0f} vezes mais luminosa que o Sol")
+        elif luminosity_solar > 10:
+            facts.append(f"Brilha {luminosity_solar:.1f} vezes mais que o Sol")
+        elif luminosity_solar > 1.5:
+            facts.append(f"É {luminosity_solar:.1f} vezes mais brilhante que o Sol")
+        elif luminosity_solar < 0.1:
+            facts.append(f"Brilha apenas {luminosity_solar:.2f} vezes a luminosidade solar")
+        else:
+            facts.append(f"Luminosidade similar ao Sol: {luminosity_solar:.1f}x")
+    
+    # Fatos sobre velocidade radial (NOVO)
+    if radial_velocity is not None:
+        if radial_velocity > 0:
+            facts.append(f"Está se afastando de nós a {radial_velocity:.1f} km/s")
+        elif radial_velocity < 0:
+            facts.append(f"Está se aproximando de nós a {abs(radial_velocity):.1f} km/s")
+        else:
+            facts.append(f"Tem velocidade radial quase nula em relação à Terra")
+    
     # Fatos sobre idade
     if age_billion_years is not None:
         if age_billion_years < 0.01:
@@ -332,14 +360,17 @@ def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class)
         elif age_billion_years > 10:
             facts.append(f"Nasceu apenas {13.8 - age_billion_years:.1f} bilhões de anos após o Big Bang")
     
-    # Comparações temporais
+    # Comparações temporais (CORRIGIDO)
     comparisons = []
     
-    if age_billion_years is not None and age_billion_years > 4.6:
-        comparisons.append(f"É {age_billion_years - 4.6:.1f} bilhões de anos mais velha que o Sol")
-        comparisons.append(f"Quando {star_name} nasceu, o Sistema Solar não existia")
-    elif age_billion_years is not None:
-        comparisons.append(f"É {4.6 - age_billion_years:.1f} bilhões de anos mais jovem que o Sol")
+    if age_billion_years is not None:
+        if age_billion_years > 4.6:
+            comparisons.append(f"É {age_billion_years - 4.6:.1f} bilhões de anos mais velha que o Sol")
+            comparisons.append(f"Quando {star_name} nasceu, o Sistema Solar não existia")
+        else:
+            comparisons.append(f"É {4.6 - age_billion_years:.1f} bilhões de anos mais jovem que o Sol")
+            if age_billion_years < 1:
+                comparisons.append(f"Nasceu quando o Sol já brilhava há {4.6 - age_billion_years:.1f} bilhões de anos")
     
     if real_distance is not None and real_distance < 100:
         comparisons.append(f"Sua luz começou a viagem quando {calculate_historical_event(real_distance)}")
@@ -367,7 +398,7 @@ def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class)
         'birth_era': birth_era,
         'temporal_message': temporal_messages[0] if temporal_messages else "Uma mensagem temporal aguarda.",
         'history': history,
-        'fun_facts': facts[:4],
+        'fun_facts': facts[:6],  # Aumentado para 6 para incluir luminosidade e velocidade
         'timeline_comparison': {
             'comparisons': comparisons,
             'era_when_light_started': era_light,
@@ -375,7 +406,9 @@ def generate_star_curiosities(star_name, distance_ly, magnitude, spectral_class)
         },
         'real_age_billions': age_billion_years,
         'temperature_k': temperature,
-        'mass_solar': mass
+        'mass_solar': mass,
+        'luminosity_solar': luminosity_solar,
+        'radial_velocity_km_s': radial_velocity
     }
 
 def estimate_age_from_spectral(spectral_class):
@@ -464,6 +497,27 @@ def calculate_historical_event(years_ago):
         else:
             return f"estávamos no ano {abs(year)} a.C."
 
+def estimate_luminosity_from_temp_and_mass(temperature, mass):
+    """Estima luminosidade baseada na temperatura e massa (Lei de Stefan-Boltzmann simplificada)"""
+    if not temperature or not mass:
+        return 1.0
+    
+    # Temperatura e raio solar como referência
+    temp_sun = 5778
+    
+    # Estimativa de raio baseada na massa (aproximação)
+    if mass > 10:
+        radius_ratio = mass ** 0.8
+    elif mass > 1:
+        radius_ratio = mass ** 0.5
+    else:
+        radius_ratio = mass ** 0.8
+    
+    # L = 4πR²σT⁴, então L_star/L_sun = (R_star/R_sun)² × (T_star/T_sun)⁴
+    temp_ratio = temperature / temp_sun
+    luminosity = (radius_ratio ** 2) * (temp_ratio ** 4)
+    
+    return round(luminosity, 2)
 
 def get_astrology_data(birth_date, birth_time, latitude, longitude):
     """Gera dados astrológicos completos"""
@@ -1015,6 +1069,7 @@ __all__ = [
     'estimate_age_from_spectral', # Export helpers if used by other modules
     'estimate_temperature_from_spectral',
     'estimate_mass_from_magnitude',
+    'estimate_luminosity_from_temp_and_mass',  # NOVA FUNÇÃO ADICIONADA
     'calculate_historical_event',
     'calculate_moon_phase',
     'calculate_tidal_influence',
