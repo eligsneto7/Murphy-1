@@ -84,6 +84,28 @@ async def debug_middleware(request: Request, call_next):
     
     return response
 
+# Middleware para corrigir HTTPS em Railway
+@app.middleware("http")
+async def https_redirect_middleware(request: Request, call_next):
+    """Corrige scheme HTTPS para URLs geradas corretamente no Railway"""
+    
+    # Railway envia X-Forwarded-Proto: https
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    forwarded_host = request.headers.get("x-forwarded-host")
+    
+    if forwarded_proto == "https":
+        # Modificar request scope para HTTPS
+        request.scope["scheme"] = "https"
+        print(f"🔒 HTTPS detected via X-Forwarded-Proto")
+        
+        # Se tem host forwarded, usar ele também
+        if forwarded_host:
+            request.scope["server"] = (forwarded_host, 443)
+            print(f"🔒 Host set to: {forwarded_host}:443")
+    
+    response = await call_next(request)
+    return response
+
 # Lazy loading - criar objetos apenas quando necessário
 calculator = None
 star_catalog = None
