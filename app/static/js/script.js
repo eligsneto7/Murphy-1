@@ -823,4 +823,488 @@ setupEasterEggs();
 // Inicializar otimizações
 optimizePerformance();
 
-console.log('🤖 Murphy-1 initialized successfully! Sistema operacional e pronto para análise temporal! 🤖'); 
+console.log('🤖 Murphy-1 initialized successfully! Sistema operacional e pronto para análise temporal! 🤖');
+
+// ===== MURPHY-1 ULTRATHINK ENHANCEMENTS =====
+
+// Particle System for Homepage
+class ParticleSystem {
+    constructor() {
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'particle-canvas';
+        this.canvas.style.position = 'fixed';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.pointerEvents = 'none';
+        this.canvas.style.zIndex = '1';
+        
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.mouseX = 0;
+        this.mouseY = 0;
+        this.animationFrame = null;
+        
+        // Insert canvas before main content
+        const mainContainer = document.querySelector('.main-container');
+        if (mainContainer) {
+            document.body.insertBefore(this.canvas, mainContainer);
+        }
+        
+        this.init();
+    }
+    
+    init() {
+        this.resize();
+        this.createParticles();
+        this.setupEventListeners();
+        this.animate();
+    }
+    
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+    
+    createParticles() {
+        const particleCount = Math.floor((window.innerWidth * window.innerHeight) / 15000);
+        
+        for (let i = 0; i < particleCount; i++) {
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                size: Math.random() * 2 + 0.5,
+                speedX: (Math.random() - 0.5) * 0.5,
+                speedY: (Math.random() - 0.5) * 0.5,
+                opacity: Math.random() * 0.5 + 0.2,
+                pulseOffset: Math.random() * Math.PI * 2,
+                connections: []
+            });
+        }
+    }
+    
+    setupEventListeners() {
+        window.addEventListener('resize', () => this.resize());
+        
+        window.addEventListener('mousemove', (e) => {
+            this.mouseX = e.clientX;
+            this.mouseY = e.clientY;
+        });
+        
+        // Mobile touch support
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                this.mouseX = e.touches[0].clientX;
+                this.mouseY = e.touches[0].clientY;
+            }
+        });
+    }
+    
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Update and draw particles
+        this.particles.forEach((particle, i) => {
+            // Update position
+            particle.x += particle.speedX;
+            particle.y += particle.speedY;
+            
+            // Wrap around screen
+            if (particle.x < 0) particle.x = this.canvas.width;
+            if (particle.x > this.canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = this.canvas.height;
+            if (particle.y > this.canvas.height) particle.y = 0;
+            
+            // Mouse interaction
+            const dx = this.mouseX - particle.x;
+            const dy = this.mouseY - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 150) {
+                const force = (150 - distance) / 150;
+                particle.x -= (dx / distance) * force * 2;
+                particle.y -= (dy / distance) * force * 2;
+            }
+            
+            // Pulse effect
+            const pulse = Math.sin(Date.now() * 0.001 + particle.pulseOffset) * 0.2 + 0.8;
+            
+            // Draw particle
+            this.ctx.fillStyle = `rgba(93, 173, 226, ${particle.opacity * pulse})`;
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Draw connections
+            particle.connections = [];
+            for (let j = i + 1; j < this.particles.length; j++) {
+                const other = this.particles[j];
+                const dx2 = other.x - particle.x;
+                const dy2 = other.y - particle.y;
+                const distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                
+                if (distance2 < 120) {
+                    particle.connections.push({ other, distance: distance2 });
+                    
+                    const opacity = (1 - distance2 / 120) * 0.3;
+                    this.ctx.strokeStyle = `rgba(93, 173, 226, ${opacity})`;
+                    this.ctx.lineWidth = 0.5;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(particle.x, particle.y);
+                    this.ctx.lineTo(other.x, other.y);
+                    this.ctx.stroke();
+                }
+            }
+        });
+        
+        this.animationFrame = requestAnimationFrame(() => this.animate());
+    }
+    
+    destroy() {
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+        }
+        if (this.canvas && this.canvas.parentNode) {
+            this.canvas.parentNode.removeChild(this.canvas);
+        }
+    }
+}
+
+// Initialize particle system on homepage
+if (document.querySelector('.hero-section')) {
+    const particleSystem = new ParticleSystem();
+}
+
+// ===== ENHANCED TARS ANIMATIONS =====
+function enhanceTARSCompanion() {
+    const tarsRobot = document.querySelector('.tars-robot');
+    if (!tarsRobot) return;
+    
+    // Advanced state management
+    const tarsState = {
+        isActive: false,
+        currentMode: 'idle',
+        rotationY: 0,
+        rotationX: 0,
+        scale: 1,
+        glowIntensity: 1
+    };
+    
+    // Create enhanced visual elements
+    const createEnhancedTARS = () => {
+        // Add glow effect
+        const glowRing = document.createElement('div');
+        glowRing.className = 'tars-glow-ring';
+        glowRing.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            border-radius: 15px;
+            background: radial-gradient(circle, transparent 30%, rgba(93, 173, 226, 0.4) 70%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        `;
+        tarsRobot.appendChild(glowRing);
+        
+        // Add scanning beam
+        const scanBeam = document.createElement('div');
+        scanBeam.className = 'tars-scan-beam';
+        scanBeam.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(93, 173, 226, 0.8), transparent);
+            opacity: 0;
+            pointer-events: none;
+        `;
+        tarsRobot.appendChild(scanBeam);
+    };
+    
+    // Advanced animations
+    const animateTARS = () => {
+        const time = Date.now() * 0.001;
+        
+        // Idle breathing animation
+        const breathe = Math.sin(time * 0.5) * 0.02 + 1;
+        tarsRobot.style.transform = `
+            translateY(${Math.sin(time * 0.3) * 5}px)
+            rotateY(${tarsState.rotationY}deg)
+            rotateX(${tarsState.rotationX}deg)
+            scale(${tarsState.scale * breathe})
+        `;
+        
+        // Segment animations
+        const segments = tarsRobot.querySelectorAll('.tars-segment');
+        segments.forEach((segment, i) => {
+            const offset = i * 0.2;
+            const rotation = Math.sin(time * 0.8 + offset) * 2;
+            segment.style.transform = `rotateZ(${rotation}deg)`;
+        });
+        
+        // Light pulsing
+        const light = tarsRobot.querySelector('.tars-light');
+        if (light) {
+            const pulse = Math.sin(time * 3) * 0.3 + 0.7;
+            light.style.opacity = pulse;
+            light.style.boxShadow = `0 0 ${20 * pulse}px rgba(231, 76, 60, ${pulse})`;
+        }
+        
+        requestAnimationFrame(animateTARS);
+    };
+    
+    // Enhanced interactions
+    const setupAdvancedInteractions = () => {
+        // 3D mouse tracking
+        let mouseX = 0, mouseY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+            
+            // Update TARS orientation based on mouse
+            tarsState.rotationY = mouseX * 15;
+            tarsState.rotationX = -mouseY * 10;
+        });
+        
+        // Click interactions
+        tarsRobot.addEventListener('click', () => {
+            tarsState.isActive = !tarsState.isActive;
+            
+            const glowRing = tarsRobot.querySelector('.tars-glow-ring');
+            const scanBeam = tarsRobot.querySelector('.tars-scan-beam');
+            const dialogue = tarsRobot.querySelector('.tars-dialogue');
+            
+            if (tarsState.isActive) {
+                // Activation sequence
+                glowRing.style.opacity = '1';
+                tarsState.scale = 1.1;
+                
+                // Scanning animation
+                scanBeam.style.animation = 'scan-sweep 2s ease-in-out';
+                scanBeam.style.opacity = '1';
+                
+                // Special activation dialogue
+                if (dialogue) {
+                    dialogue.textContent = '"Sistema de análise temporal ativado. Pronto para explorar o cosmos."';
+                    dialogue.style.color = '#FFD700';
+                }
+                
+                setTimeout(() => {
+                    scanBeam.style.opacity = '0';
+                    if (dialogue) {
+                        dialogue.style.color = '';
+                    }
+                }, 2000);
+            } else {
+                glowRing.style.opacity = '0';
+                tarsState.scale = 1;
+            }
+        });
+        
+        // Proximity detection
+        document.addEventListener('mousemove', (e) => {
+            const rect = tarsRobot.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - centerX, 2) + 
+                Math.pow(e.clientY - centerY, 2)
+            );
+            
+            if (distance < 200) {
+                const proximity = 1 - (distance / 200);
+                tarsRobot.style.filter = `brightness(${1 + proximity * 0.3})`;
+            } else {
+                tarsRobot.style.filter = 'brightness(1)';
+            }
+        });
+    };
+    
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes scan-sweep {
+            0% { transform: translateX(-50%) scaleY(0); opacity: 0; }
+            10% { transform: translateX(-50%) scaleY(1); opacity: 1; }
+            90% { transform: translateX(-50%) scaleY(1); opacity: 1; }
+            100% { transform: translateX(-50%) scaleY(0); opacity: 0; }
+        }
+        
+        .tars-robot {
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .tars-segment {
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Initialize
+    createEnhancedTARS();
+    animateTARS();
+    setupAdvancedInteractions();
+}
+
+// Replace original TARS setup with enhanced version
+document.addEventListener('DOMContentLoaded', () => {
+    enhanceTARSCompanion();
+});
+
+// ===== ENHANCED LOADING EXPERIENCE =====
+function enhanceLoadingExperience() {
+    const quotes = document.querySelectorAll('.loading-quotes .quote');
+    const statusElement = document.querySelector('.loading-status');
+    let currentQuoteIndex = 0;
+    
+    // Status messages that update during loading
+    const statusMessages = [
+        "Calculando coordenadas temporais...",
+        "Analisando posição celestial...",
+        "Sincronizando com o cosmos...",
+        "Mapeando constelações...",
+        "Identificando sua estrela..."
+    ];
+    
+    let statusIndex = 0;
+    
+    // Rotate quotes
+    if (quotes.length > 0) {
+        setInterval(() => {
+            quotes[currentQuoteIndex].classList.remove('active');
+            currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+            quotes[currentQuoteIndex].classList.add('active');
+        }, 4000);
+    }
+    
+    // Update status messages
+    if (statusElement) {
+        setInterval(() => {
+            statusIndex = (statusIndex + 1) % statusMessages.length;
+            statusElement.style.opacity = '0';
+            setTimeout(() => {
+                statusElement.textContent = statusMessages[statusIndex];
+                statusElement.style.opacity = '1';
+            }, 300);
+        }, 2000);
+    }
+}
+
+// ===== ENHANCED FORM INTERACTIONS =====
+function enhanceFormInteractions() {
+    const form = document.getElementById('cosmic-form');
+    const inputs = form?.querySelectorAll('.form-input');
+    const submitButton = form?.querySelector('.cosmic-button');
+    
+    if (!form || !inputs) return;
+    
+    // Add floating labels effect
+    inputs.forEach(input => {
+        // Create floating label
+        const label = document.createElement('span');
+        label.className = 'floating-label';
+        label.textContent = input.placeholder;
+        label.style.cssText = `
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-gray);
+            font-size: 1rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            background: var(--deep-black);
+            padding: 0 8px;
+        `;
+        
+        // Wrap input in container
+        const container = document.createElement('div');
+        container.style.position = 'relative';
+        input.parentNode.insertBefore(container, input);
+        container.appendChild(input);
+        container.appendChild(label);
+        
+        // Handle focus/blur
+        input.addEventListener('focus', () => {
+            label.style.top = '0';
+            label.style.fontSize = '0.8rem';
+            label.style.color = 'var(--accent-cyan)';
+        });
+        
+        input.addEventListener('blur', () => {
+            if (!input.value) {
+                label.style.top = '50%';
+                label.style.fontSize = '1rem';
+                label.style.color = 'var(--light-gray)';
+            }
+        });
+        
+        // Remove placeholder
+        input.placeholder = '';
+        
+        // Add glow effect on focus
+        input.addEventListener('focus', () => {
+            input.style.boxShadow = '0 0 20px rgba(93, 173, 226, 0.5)';
+        });
+        
+        input.addEventListener('blur', () => {
+            input.style.boxShadow = 'none';
+        });
+    });
+    
+    // Enhanced submit animation
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // Create ripple effect
+        const ripple = document.createElement('div');
+        ripple.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(93, 173, 226, 0.8), transparent);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+        `;
+        document.body.appendChild(ripple);
+        
+        // Animate ripple
+        ripple.animate([
+            { width: '0px', height: '0px', opacity: 1 },
+            { width: '3000px', height: '3000px', opacity: 0 }
+        ], {
+            duration: 1500,
+            easing: 'ease-out'
+        }).onfinish = () => ripple.remove();
+        
+        // Show enhanced loading
+        setTimeout(() => {
+            showLoadingOverlay();
+            enhanceLoadingExperience();
+            
+            // Submit form after animation
+            setTimeout(() => {
+                form.submit();
+            }, 500);
+        }, 300);
+    });
+}
+
+// Initialize enhancements when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    enhanceFormInteractions();
+}); 

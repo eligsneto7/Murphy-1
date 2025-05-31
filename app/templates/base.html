@@ -26,26 +26,205 @@
         {% block content %}{% endblock %}
     </div>
     
-    <!-- Loading Overlay -->
+    <!-- Enhanced Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay hidden">
         <div class="loading-content">
-            <div class="loading-grid">
-                <div class="grid-line"></div>
-                <div class="grid-line"></div>
-                <div class="grid-line"></div>
-                <div class="grid-line"></div>
+            <div class="loading-universe">
+                <!-- Animated stars background -->
+                <div class="loading-stars"></div>
+                <div class="loading-stars2"></div>
+                <div class="loading-stars3"></div>
+                
+                <!-- Central wormhole effect -->
+                <div class="wormhole">
+                    <div class="wormhole-ring"></div>
+                    <div class="wormhole-ring"></div>
+                    <div class="wormhole-ring"></div>
+                    <div class="wormhole-core"></div>
+                </div>
             </div>
+            
             <div class="loading-text">
-                <h2>MURPHY-1 ANALISANDO COORDENADAS</h2>
-                <p>Calculando trajetória no espaço-tempo...</p>
-                <div class="loading-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                <h2>ATRAVESSANDO O ESPAÇO-TEMPO</h2>
+                <div class="loading-progress">
+                    <div class="progress-bar"></div>
+                </div>
+                <p class="loading-status">Calculando coordenadas temporais...</p>
+                
+                <!-- Inspirational quotes that rotate -->
+                <div class="loading-quotes">
+                    <p class="quote active">"O tempo é relativo; sua percepção depende de onde você está." - Interstellar</p>
+                    <p class="quote">"Nós somos feitos de poeira de estrelas." - Carl Sagan</p>
+                    <p class="quote">"A única maneira de fazer sentido do mudança é mergulhar nela." - Alan Watts</p>
                 </div>
             </div>
         </div>
     </div>
+    
+    <style>
+        /* Enhanced Loading Animations */
+        .loading-universe {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .wormhole {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+        }
+        
+        .wormhole-ring {
+            position: absolute;
+            border: 2px solid rgba(93, 173, 226, 0.3);
+            border-radius: 50%;
+            animation: wormhole-spin 4s linear infinite;
+        }
+        
+        .wormhole-ring:nth-child(1) {
+            width: 100%;
+            height: 100%;
+            animation-duration: 3s;
+        }
+        
+        .wormhole-ring:nth-child(2) {
+            width: 70%;
+            height: 70%;
+            top: 15%;
+            left: 15%;
+            animation-duration: 4s;
+            animation-direction: reverse;
+        }
+        
+        .wormhole-ring:nth-child(3) {
+            width: 40%;
+            height: 40%;
+            top: 30%;
+            left: 30%;
+            animation-duration: 2s;
+        }
+        
+        .wormhole-core {
+            position: absolute;
+            top: 40%;
+            left: 40%;
+            width: 20%;
+            height: 20%;
+            background: radial-gradient(circle, #FFD700 0%, rgba(93, 173, 226, 0.8) 50%, transparent 100%);
+            border-radius: 50%;
+            animation: wormhole-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes wormhole-spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes wormhole-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.5); opacity: 1; }
+        }
+        
+        .loading-progress {
+            width: 300px;
+            height: 4px;
+            background: rgba(26, 44, 61, 0.5);
+            border-radius: 2px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #5dade2, #FFD700);
+            width: 0%;
+            animation: progress-fill 3s ease-out forwards;
+        }
+        
+        @keyframes progress-fill {
+            0% { width: 0%; }
+            30% { width: 45%; }
+            60% { width: 75%; }
+            100% { width: 100%; }
+        }
+        
+        .loading-quotes {
+            margin-top: 30px;
+            height: 60px;
+            position: relative;
+        }
+        
+        .quote {
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            font-style: italic;
+            color: var(--light-cyan);
+        }
+        
+        .quote.active {
+            opacity: 1;
+        }
+        
+        .loading-status {
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+            animation: status-pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes status-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        /* Enhanced star animations */
+        .loading-stars,
+        .loading-stars2,
+        .loading-stars3 {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-repeat: repeat;
+            background-size: 1000px 1000px;
+            animation: loading-stars-move 100s linear infinite;
+        }
+        
+        .loading-stars {
+            background-image: radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                              radial-gradient(2px 2px at 40px 70px, #eee, transparent),
+                              radial-gradient(1px 1px at 50px 160px, #eee, transparent),
+                              radial-gradient(1px 1px at 130px 40px, #eee, transparent);
+            background-position: 0 0;
+        }
+        
+        .loading-stars2 {
+            background-image: radial-gradient(3px 3px at 150px 100px, #ddd, transparent),
+                              radial-gradient(2px 2px at 250px 250px, #ddd, transparent),
+                              radial-gradient(2px 2px at 350px 350px, #ddd, transparent);
+            background-position: 0 0;
+            animation-duration: 150s;
+        }
+        
+        .loading-stars3 {
+            background-image: radial-gradient(1px 1px at 100px 200px, #fff, transparent),
+                              radial-gradient(1px 1px at 300px 150px, #fff, transparent);
+            background-position: 0 0;
+            animation-duration: 200s;
+            animation-direction: reverse;
+        }
+        
+        @keyframes loading-stars-move {
+            from { transform: translateY(0); }
+            to { transform: translateY(-1000px); }
+        }
+    </style>
     
     <!-- JavaScript -->
     <script src="{{ url_for('static', path='/js/script.js') }}"></script>

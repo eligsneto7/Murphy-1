@@ -41,11 +41,6 @@
                     <!-- Controles de Visualização -->
                     <div class="view-controls">
                         <div class="control-group">
-                            <label>Zoom:</label>
-                            <input type="range" id="zoom-slider" min="50" max="300" value="100" class="zoom-slider">
-                            <span id="zoom-value">100%</span>
-                        </div>
-                        <div class="control-group">
                             <button id="reset-view" class="control-button">Resetar Vista</button>
                         </div>
                     </div>
@@ -344,30 +339,14 @@ function setupInfoPanel() {
 }
 
 function setupControls() {
-    const zoomSlider = document.getElementById('zoom-slider');
-    const zoomValue = document.getElementById('zoom-value');
     const resetButton = document.getElementById('reset-view');
-    
-    // Controle de zoom
-    zoomSlider.addEventListener('input', (e) => {
-        const zoomPercent = parseInt(e.target.value);
-        const zoomFactor = zoomPercent / 100;
-        
-        if (skyViewer) {
-            skyViewer.zoom = zoomFactor;
-        }
-        
-        zoomValue.textContent = zoomPercent + '%';
-    });
     
     // Botão de reset
     resetButton.addEventListener('click', () => {
         if (skyViewer) {
-            skyViewer.zoom = 1.0;
-            skyViewer.panX = 0;
-            skyViewer.panY = 0;
-            zoomSlider.value = 100;
-            zoomValue.textContent = '100%';
+            skyViewer.state.targetZoom = 1.0;
+            skyViewer.state.targetPanX = 0;
+            skyViewer.state.targetPanY = 0;
         }
     });
 }
