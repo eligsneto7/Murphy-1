@@ -277,7 +277,7 @@ class ModernSkyViewer {
             // Desenhar estrela com formato de estrela
             this.ctx.fillStyle = obj.color;
             this.ctx.beginPath();
-            this.drawStar(screenPos.x, screenPos.y, finalSize / 2, 5);
+            this.drawStar(obj);
             this.ctx.fill();
             
             // Desenhar nome se estiver em hover ou for muito importante
@@ -305,12 +305,53 @@ class ModernSkyViewer {
         });
     }
     
-    drawStar(x, y, radius, points) {
-        const angle = Math.PI / points;
+    drawStar(star) {
+        const x = (star.x + 1) * this.size / 2;
+        const y = (1 - star.y) * this.size / 2;
+        
+        // Larger touch targets for mobile
+        const baseSize = this.isMobile() ? Math.max(4, star.size * 1.5) : star.size;
+        const size = baseSize * this.scale;
+        
+        // Glow effect
+        const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+        gradient.addColorStop(0, star.color + '80');
+        gradient.addColorStop(1, 'transparent');
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, size * 2, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Star core
+        this.ctx.fillStyle = star.color;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, size, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Star spikes for brighter stars
+        if (star.magnitude < 3) {
+            this.drawStarSpikes(x, y, size, star.color);
+        }
+        
+        // Highlight if this is the zenith star
+        if (star.is_zenith) {
+            this.ctx.strokeStyle = this.config.zenithColor;
+            this.ctx.lineWidth = 2;
+            this.ctx.setLineDash([4, 4]);
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, size * 2.5, 0, Math.PI * 2);
+            this.ctx.stroke();
+            this.ctx.setLineDash([]);
+        }
+    }
+    
+    drawStarSpikes(x, y, size, color) {
+        const angle = Math.PI / 5;
         this.ctx.beginPath();
         
-        for (let i = 0; i < points * 2; i++) {
-            const r = i % 2 === 0 ? radius : radius * 0.5;
+        for (let i = 0; i < 5; i++) {
+            const r = i % 2 === 0 ? size : size * 0.5;
             const currentAngle = i * angle - Math.PI / 2;
             const px = x + Math.cos(currentAngle) * r;
             const py = y + Math.sin(currentAngle) * r;
@@ -323,6 +364,9 @@ class ModernSkyViewer {
         }
         
         this.ctx.closePath();
+        
+        this.ctx.fillStyle = color;
+        this.ctx.fill();
     }
     
     drawZenith(timestamp) {
@@ -420,64 +464,9 @@ class ModernSkyViewer {
     }
     
     drawHoverInfo() {
-        if (!this.hoveredObject) return;
-        
-        const obj = this.hoveredObject;
-        const padding = 15;
-        const lineHeight = 18;
-        const maxWidth = 250;
-        
-        // Preparar texto
-        const lines = [
-            `${obj.name}`,
-            `Tipo: ${obj.type === 'star' ? 'Estrela' : obj.type === 'sun' ? 'Sol' : obj.type === 'planet' ? 'Planeta' : obj.type === 'moon' ? 'Lua' : 'Objeto Celeste'}`,
-            `Cor: ${obj.color_name || 'Desconhecida'}`,
-            `Magnitude: ${obj.magnitude.toFixed(1)}`,
-            `Distância do Zênite: ${obj.distance_to_zenith.toFixed(1)}°`
-        ];
-        
-        if (obj.temperature) {
-            lines.push(`Temperatura: ${obj.temperature.toLocaleString()}K`);
-        }
-        
-        // Calcular dimensões do tooltip
-        this.ctx.font = '12px "Exo 2", sans-serif';
-        const textWidth = Math.max(...lines.map(line => this.ctx.measureText(line).width));
-        const tooltipWidth = Math.min(textWidth + padding * 2, maxWidth);
-        const tooltipHeight = lines.length * lineHeight + padding * 2;
-        
-        // Posição do tooltip (canto superior direito)
-        const tooltipX = this.size - tooltipWidth - 20;
-        const tooltipY = 20;
-        
-        // Fundo do tooltip
-        this.ctx.fillStyle = 'rgba(26, 44, 61, 0.95)';
-        this.ctx.strokeStyle = this.config.zenithColor;
-        this.ctx.lineWidth = 1;
-        this.ctx.beginPath();
-        this.ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 8);
-        this.ctx.fill();
-        this.ctx.stroke();
-        
-        // Texto do tooltip
-        this.ctx.fillStyle = this.config.textColor;
-        this.ctx.textAlign = 'left';
-        this.ctx.textBaseline = 'top';
-        
-        lines.forEach((line, index) => {
-            const y = tooltipY + padding + index * lineHeight;
-            
-            if (index === 0) {
-                // Nome em destaque
-                this.ctx.font = 'bold 14px "Exo 2", sans-serif';
-                this.ctx.fillStyle = this.config.zenithColor;
-            } else {
-                this.ctx.font = '12px "Exo 2", sans-serif';
-                this.ctx.fillStyle = this.config.textColor;
-            }
-            
-            this.ctx.fillText(line, tooltipX + padding, y);
-        });
+        // Hover info disabled for better mobile experience
+        // Touch interactions will show object details directly
+        return;
     }
     
     drawZoomControls() {
@@ -523,6 +512,10 @@ class ModernSkyViewer {
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
         }
+    }
+    
+    isMobile() {
+        return window.innerWidth <= 768 || 'ontouchstart' in window;
     }
 }
 
