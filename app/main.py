@@ -111,6 +111,10 @@ calculator = None
 star_catalog = None
 modern_sky_renderer = None
 
+# Variáveis globais para carregamento lazy dos dados astronômicos
+ts = None
+planets = None
+
 class AstronomicalCalculator:
     def __init__(self):
         global ts, planets

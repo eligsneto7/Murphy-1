@@ -8,11 +8,20 @@ import pytz
 import math
 import colorsys
 
+# Variáveis globais para compartilhar com main.py
+ts = None
+planets = None
+
 class ModernSkyRenderer:
     def __init__(self):
-        self.ts = load.timescale()
-        self.planets = load('de421.bsp')
-        self.earth = self.planets['earth']
+        global ts, planets
+        # Lazy loading - usar variáveis globais se já carregadas
+        if ts is None:
+            ts = load.timescale()
+            planets = load('de421.bsp')
+        self.ts = ts
+        self.planets = planets
+        self.earth = planets['earth']
         
         # Cores espectrais científicas reais (baseadas na temperatura)
         self.spectral_colors = {
