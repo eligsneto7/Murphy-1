@@ -1,51 +1,103 @@
-// ===== MODERN SKY VIEWER - INTERACTIVE CANVAS =====
+// 🌌 MURPHY-1 ULTRA MODERN SKY VIEWER
+// Advanced celestial visualization with realistic rendering
 
 class ModernSkyViewer {
     constructor(canvasId, data) {
         this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d');
-        this.data = data;
+        if (!this.canvas) return;
         
-        // Estado da visualização
-        this.zoom = 1.0;
-        this.panX = 0;
-        this.panY = 0;
-        this.hoveredObject = null;
+        this.ctx = this.canvas.getContext('2d', { 
+            alpha: false,
+            desynchronized: true
+        });
+        
+        this.data = data;
         this.animationFrame = null;
         
-        // Configurações visuais
+        // Advanced rendering config
         this.config = {
-            backgroundColor: '#0a0f14',
+            // Deep space colors
+            spaceGradient: [
+                { pos: 0, color: '#000814' },      // Deep space black
+                { pos: 0.3, color: '#001d3d' },    // Midnight blue
+                { pos: 0.6, color: '#003566' },    // Deep blue
+                { pos: 0.85, color: '#1e3a5f' },   // Horizon blue
+                { pos: 1, color: '#2a4a7c' }       // Atmosphere edge
+            ],
+            
+            // Star colors by temperature
+            starColors: {
+                O: '#9bb0ff',  // Blue-white (hottest)
+                B: '#aabfff',  // Blue
+                A: '#cad7ff',  // Blue-white
+                F: '#f8f7ff',  // White
+                G: '#fff4ea',  // Yellow-white (Sun)
+                K: '#ffd2a1',  // Orange
+                M: '#ffcc6f'   // Red (coolest)
+            },
+            
+            // Visual effects
+            milkyWayOpacity: 0.15,
+            starGlowIntensity: 0.8,
+            nebulaeCount: 3,
+            shootingStarChance: 0.002,
+            
+            // UI colors
             zenithColor: '#5dade2',
-            gridColor: 'rgba(93, 173, 226, 0.1)',
-            textColor: '#ffffff',
-            hoverColor: '#85c1e9',
-            glowIntensity: 0.8,
-            animationSpeed: 0.02
+            gridColor: 'rgba(93, 173, 226, 0.15)',
+            textColor: '#ecf0f1',
+            glowColor: '#fff',
+            
+            // Animation
+            rotationSpeed: 0.00005,
+            twinkleSpeed: 0.003,
+            parallaxFactor: 0.3
+        };
+        
+        // State management
+        this.state = {
+            zoom: 1,
+            targetZoom: 1,
+            rotation: 0,
+            panX: 0,
+            panY: 0,
+            targetPanX: 0,
+            targetPanY: 0,
+            hoveredObject: null,
+            selectedObject: null,
+            mouseX: 0,
+            mouseY: 0,
+            time: 0,
+            shootingStars: [],
+            particles: []
+        };
+        
+        // Performance optimization
+        this.layers = {
+            background: null,
+            milkyWay: null,
+            deepSpace: null,
+            stars: null
         };
         
         this.setupCanvas();
+        this.initializeLayers();
         this.setupEventListeners();
         this.startAnimation();
     }
     
     setupCanvas() {
-        // Configurar canvas responsivo
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
-        
-        // Configurar contexto para renderização suave
-        this.ctx.imageSmoothingEnabled = true;
-        this.ctx.imageSmoothingQuality = 'high';
     }
     
     resizeCanvas() {
         const container = this.canvas.parentElement;
         const rect = container.getBoundingClientRect();
-        
-        // Usar devicePixelRatio para telas de alta resolução
         const dpr = window.devicePixelRatio || 1;
-        const size = Math.min(rect.width, 600); // Máximo 600px
+        
+        // Optimal size for performance and quality
+        const size = Math.min(rect.width, rect.height * 0.9, 800);
         
         this.canvas.width = size * dpr;
         this.canvas.height = size * dpr;
@@ -53,55 +105,173 @@ class ModernSkyViewer {
         this.canvas.style.height = size + 'px';
         
         this.ctx.scale(dpr, dpr);
+        
         this.size = size;
         this.center = size / 2;
-        this.radius = size * 0.45; // 90% do raio disponível
+        this.radius = size * 0.45;
+        
+        // Invalidate cached layers
+        Object.keys(this.layers).forEach(key => {
+            this.layers[key] = null;
+        });
+    }
+    
+    initializeLayers() {
+        // Pre-render static layers for performance
+        this.renderBackgroundLayer();
+        this.renderMilkyWayLayer();
+        this.generateParticles();
+    }
+    
+    renderBackgroundLayer() {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.size;
+        canvas.height = this.size;
+        const ctx = canvas.getContext('2d');
+        
+        // Create realistic space gradient
+        const gradient = ctx.createRadialGradient(
+            this.center, this.center, 0,
+            this.center, this.center, this.radius * 1.5
+        );
+        
+        this.config.spaceGradient.forEach(stop => {
+            gradient.addColorStop(stop.pos, stop.color);
+        });
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, this.size, this.size);
+        
+        // Add subtle noise for depth
+        const imageData = ctx.getImageData(0, 0, this.size, this.size);
+        const data = imageData.data;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            const noise = (Math.random() - 0.5) * 10;
+            data[i] += noise;     // R
+            data[i + 1] += noise; // G
+            data[i + 2] += noise; // B
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        this.layers.background = canvas;
+    }
+    
+    renderMilkyWayLayer() {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.size;
+        canvas.height = this.size;
+        const ctx = canvas.getContext('2d');
+        
+        // Create milky way effect
+        ctx.save();
+        ctx.translate(this.center, this.center);
+        ctx.rotate(-Math.PI / 6); // Tilt the milky way
+        
+        // Multiple layers for depth
+        for (let layer = 0; layer < 3; layer++) {
+            const gradient = ctx.createLinearGradient(
+                -this.radius * 1.5, 0,
+                this.radius * 1.5, 0
+            );
+            
+            const opacity = (0.05 - layer * 0.015) * 255;
+            gradient.addColorStop(0, `rgba(200, 200, 255, 0)`);
+            gradient.addColorStop(0.2, `rgba(200, 200, 255, ${opacity / 255})`);
+            gradient.addColorStop(0.5, `rgba(255, 220, 200, ${opacity * 1.2 / 255})`);
+            gradient.addColorStop(0.8, `rgba(200, 200, 255, ${opacity / 255})`);
+            gradient.addColorStop(1, `rgba(200, 200, 255, 0)`);
+            
+            ctx.fillStyle = gradient;
+            
+            // Irregular shape for natural look
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.radius * (1.8 - layer * 0.2), 
+                       this.radius * (0.3 - layer * 0.05), 
+                       0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        ctx.restore();
+        
+        // Add star clusters
+        for (let i = 0; i < 200; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = (Math.random() * 0.4 + 0.3) * this.radius;
+            const x = this.center + Math.cos(angle) * distance;
+            const y = this.center + Math.sin(angle) * distance;
+            
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.3 + 0.1})`;
+            ctx.beginPath();
+            ctx.arc(x, y, Math.random() * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        this.layers.milkyWay = canvas;
+    }
+    
+    generateParticles() {
+        // Generate background star particles for parallax effect
+        this.state.particles = [];
+        
+        for (let i = 0; i < 300; i++) {
+            this.state.particles.push({
+                x: Math.random() * this.size,
+                y: Math.random() * this.size,
+                size: Math.random() * 1.5 + 0.5,
+                brightness: Math.random() * 0.5 + 0.2,
+                twinkleOffset: Math.random() * Math.PI * 2,
+                depth: Math.random() * 0.8 + 0.2 // For parallax
+            });
+        }
     }
     
     setupEventListeners() {
-        // Mouse events para interatividade
+        // Mouse events
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         this.canvas.addEventListener('mouseout', () => this.handleMouseOut());
-        this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+        this.canvas.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false });
         this.canvas.addEventListener('click', (e) => this.handleClick(e));
         
-        // Touch events para dispositivos móveis
-        this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e));
-        this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+        // Touch events
+        this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+        this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
         this.canvas.addEventListener('touchend', () => this.handleTouchEnd());
-    }
-    
-    getMousePos(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
     }
     
     handleMouseMove(e) {
-        const pos = this.getMousePos(e);
-        this.hoveredObject = this.getObjectAtPosition(pos.x, pos.y);
-        this.canvas.style.cursor = this.hoveredObject ? 'pointer' : 'default';
+        const rect = this.canvas.getBoundingClientRect();
+        this.state.mouseX = e.clientX - rect.left;
+        this.state.mouseY = e.clientY - rect.top;
+        
+        // Check for hovered objects
+        this.state.hoveredObject = this.getObjectAtPosition(this.state.mouseX, this.state.mouseY);
+        this.canvas.style.cursor = this.state.hoveredObject ? 'pointer' : 'grab';
     }
     
     handleMouseOut() {
-        this.hoveredObject = null;
+        this.state.hoveredObject = null;
         this.canvas.style.cursor = 'default';
     }
     
     handleWheel(e) {
         e.preventDefault();
-        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-        this.zoom = Math.max(0.5, Math.min(3.0, this.zoom * zoomFactor));
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        this.state.targetZoom = Math.max(0.5, Math.min(5, this.state.targetZoom * delta));
     }
     
     handleClick(e) {
-        const pos = this.getMousePos(e);
-        const clickedObject = this.getObjectAtPosition(pos.x, pos.y);
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
         
+        const clickedObject = this.getObjectAtPosition(x, y);
         if (clickedObject) {
             this.showObjectDetails(clickedObject);
+            this.state.selectedObject = clickedObject;
         }
     }
     
@@ -109,33 +279,59 @@ class ModernSkyViewer {
         e.preventDefault();
         if (e.touches.length === 1) {
             const touch = e.touches[0];
-            const pos = this.getMousePos(touch);
-            this.hoveredObject = this.getObjectAtPosition(pos.x, pos.y);
+            const rect = this.canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            this.state.hoveredObject = this.getObjectAtPosition(x, y);
         }
     }
     
     handleTouchMove(e) {
         e.preventDefault();
-        // Implementar pan para touch se necessário
+        // Implement touch pan/zoom if needed
     }
     
     handleTouchEnd() {
-        if (this.hoveredObject) {
-            this.showObjectDetails(this.hoveredObject);
+        if (this.state.hoveredObject) {
+            this.showObjectDetails(this.state.hoveredObject);
+            this.state.selectedObject = this.state.hoveredObject;
         }
-        this.hoveredObject = null;
+        this.state.hoveredObject = null;
+    }
+    
+    handleKeyDown(e) {
+        switch(e.key) {
+            case '+':
+            case '=':
+                this.state.targetZoom = Math.min(5, this.state.targetZoom * 1.2);
+                break;
+            case '-':
+                this.state.targetZoom = Math.max(0.5, this.state.targetZoom * 0.8);
+                break;
+            case '0':
+                this.state.targetZoom = 1;
+                this.state.targetPanX = 0;
+                this.state.targetPanY = 0;
+                break;
+        }
     }
     
     getObjectAtPosition(x, y) {
         if (!this.data || !this.data.objects) return null;
         
-        for (const obj of this.data.objects) {
+        // Check objects in reverse order (top to bottom)
+        for (let i = this.data.objects.length - 1; i >= 0; i--) {
+            const obj = this.data.objects[i];
             const screenPos = this.worldToScreen(obj.x, obj.y);
+            
             const distance = Math.sqrt(
-                Math.pow(x - screenPos.x, 2) + Math.pow(y - screenPos.y, 2)
+                Math.pow(x - screenPos.x, 2) + 
+                Math.pow(y - screenPos.y, 2)
             );
             
-            if (distance <= obj.size / 2 + 10) { // 10px de margem para clique
+            const hitRadius = Math.max(10, obj.size * this.state.zoom * 2);
+            if (distance <= hitRadius) {
                 return obj;
             }
         }
@@ -144,310 +340,400 @@ class ModernSkyViewer {
     }
     
     worldToScreen(worldX, worldY) {
-        // Converter coordenadas do mundo (-1 a 1) para coordenadas de tela
-        const x = this.center + (worldX * this.radius * this.zoom) + this.panX;
-        const y = this.center - (worldY * this.radius * this.zoom) + this.panY; // Y invertido
+        // Apply rotation
+        const angle = this.state.rotation;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        
+        const rotatedX = worldX * cos - worldY * sin;
+        const rotatedY = worldX * sin + worldY * cos;
+        
+        // Convert to screen coordinates with zoom and pan
+        const x = this.center + (rotatedX * this.radius * this.state.zoom) + this.state.panX;
+        const y = this.center - (rotatedY * this.radius * this.state.zoom) + this.state.panY;
+        
         return { x, y };
     }
     
     startAnimation() {
         const animate = (timestamp) => {
-            this.render(timestamp);
+            this.update(timestamp);
+            this.render();
             this.animationFrame = requestAnimationFrame(animate);
         };
         animate(0);
     }
     
-    render(timestamp) {
-        // Limpar canvas
-        this.ctx.fillStyle = this.config.backgroundColor;
+    update(timestamp) {
+        this.state.time = timestamp;
+        
+        // Smooth zoom interpolation
+        const zoomDiff = this.state.targetZoom - this.state.zoom;
+        this.state.zoom += zoomDiff * 0.1;
+        
+        // Smooth pan interpolation
+        const panXDiff = this.state.targetPanX - this.state.panX;
+        const panYDiff = this.state.targetPanY - this.state.panY;
+        this.state.panX += panXDiff * 0.1;
+        this.state.panY += panYDiff * 0.1;
+        
+        // Gentle rotation for dynamic feel
+        this.state.rotation += this.config.rotationSpeed;
+        
+        // Update shooting stars
+        this.updateShootingStars();
+    }
+    
+    updateShootingStars() {
+        // Remove finished shooting stars
+        this.state.shootingStars = this.state.shootingStars.filter(star => star.life > 0);
+        
+        // Randomly create new shooting stars
+        if (Math.random() < this.config.shootingStarChance && this.state.shootingStars.length < 3) {
+            const angle = Math.random() * Math.PI * 2;
+            const startRadius = this.radius * (0.7 + Math.random() * 0.3);
+            
+            this.state.shootingStars.push({
+                x: this.center + Math.cos(angle) * startRadius,
+                y: this.center + Math.sin(angle) * startRadius,
+                vx: (Math.random() - 0.5) * 3,
+                vy: Math.random() * 2 + 1,
+                life: 1,
+                trail: []
+            });
+        }
+        
+        // Update existing shooting stars
+        this.state.shootingStars.forEach(star => {
+            star.trail.push({ x: star.x, y: star.y, life: star.life });
+            star.x += star.vx;
+            star.y += star.vy;
+            star.life -= 0.02;
+            
+            // Limit trail length
+            if (star.trail.length > 20) {
+                star.trail.shift();
+            }
+        });
+    }
+    
+    render() {
+        // Clear canvas
+        this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.size, this.size);
         
-        // Desenhar grade de coordenadas
+        // Draw layers
+        this.drawBackground();
+        this.drawParticles();
+        this.drawMilkyWay();
         this.drawGrid();
-        
-        // Desenhar círculo do horizonte
         this.drawHorizon();
-        
-        // Desenhar objetos celestes
-        this.drawCelestialObjects(timestamp);
-        
-        // Desenhar zênite
-        this.drawZenith(timestamp);
-        
-        // Desenhar informações de hover
-        this.drawHoverInfo();
-        
-        // Desenhar controles de zoom
-        this.drawZoomControls();
+        this.drawCelestialObjects();
+        this.drawShootingStars();
+        this.drawZenithIndicator();
+        this.drawUI();
+    }
+    
+    drawBackground() {
+        if (this.layers.background) {
+            this.ctx.drawImage(this.layers.background, 0, 0);
+        }
+    }
+    
+    drawParticles() {
+        // Background stars with parallax effect
+        this.state.particles.forEach(particle => {
+            const parallaxOffset = particle.depth * this.config.parallaxFactor;
+            const x = particle.x + this.state.panX * parallaxOffset;
+            const y = particle.y + this.state.panY * parallaxOffset;
+            
+            // Twinkling effect
+            const twinkle = Math.sin(this.state.time * this.config.twinkleSpeed + particle.twinkleOffset);
+            const brightness = particle.brightness * (0.7 + twinkle * 0.3);
+            
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        });
+    }
+    
+    drawMilkyWay() {
+        if (this.layers.milkyWay) {
+            this.ctx.save();
+            this.ctx.globalAlpha = this.config.milkyWayOpacity;
+            this.ctx.translate(this.center, this.center);
+            this.ctx.rotate(this.state.rotation * 0.1); // Slow rotation
+            this.ctx.translate(-this.center, -this.center);
+            this.ctx.drawImage(this.layers.milkyWay, 0, 0);
+            this.ctx.restore();
+        }
     }
     
     drawGrid() {
+        this.ctx.save();
         this.ctx.strokeStyle = this.config.gridColor;
         this.ctx.lineWidth = 1;
         this.ctx.setLineDash([2, 4]);
         
-        // Círculos concêntricos
-        for (let i = 1; i <= 3; i++) {
-            const radius = (this.radius * i) / 3 * this.zoom;
+        // Concentric circles with zoom
+        for (let i = 1; i <= 4; i++) {
+            const radius = (this.radius * i) / 4 * this.state.zoom;
             this.ctx.beginPath();
-            this.ctx.arc(this.center + this.panX, this.center + this.panY, radius, 0, Math.PI * 2);
+            this.ctx.arc(
+                this.center + this.state.panX, 
+                this.center + this.state.panY, 
+                radius, 0, Math.PI * 2
+            );
             this.ctx.stroke();
         }
         
-        // Linhas radiais
-        for (let i = 0; i < 8; i++) {
-            const angle = (i * Math.PI) / 4;
-            const x1 = this.center + this.panX;
-            const y1 = this.center + this.panY;
-            const x2 = x1 + Math.cos(angle) * this.radius * this.zoom;
-            const y2 = y1 + Math.sin(angle) * this.radius * this.zoom;
-            
-            this.ctx.beginPath();
-            this.ctx.moveTo(x1, y1);
-            this.ctx.lineTo(x2, y2);
-            this.ctx.stroke();
-        }
-        
-        this.ctx.setLineDash([]);
+        this.ctx.restore();
     }
     
     drawHorizon() {
-        // Círculo externo do horizonte
+        // Horizon circle
+        this.ctx.save();
         this.ctx.strokeStyle = this.config.zenithColor;
         this.ctx.lineWidth = 2;
+        this.ctx.globalAlpha = 0.6;
+        
         this.ctx.beginPath();
-        this.ctx.arc(this.center + this.panX, this.center + this.panY, this.radius * this.zoom, 0, Math.PI * 2);
+        this.ctx.arc(
+            this.center + this.state.panX,
+            this.center + this.state.panY,
+            this.radius * this.state.zoom,
+            0, Math.PI * 2
+        );
         this.ctx.stroke();
         
-        // Pontos cardeais
-        const directions = ['N', 'E', 'S', 'W'];
-        const angles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
+        // Cardinal directions
+        const directions = [
+            { label: 'N', angle: -Math.PI / 2 },
+            { label: 'E', angle: 0 },
+            { label: 'S', angle: Math.PI / 2 },
+            { label: 'W', angle: Math.PI }
+        ];
         
-        this.ctx.fillStyle = this.config.zenithColor;
-        this.ctx.font = '12px "Exo 2", sans-serif';
+        this.ctx.fillStyle = this.config.textColor;
+        this.ctx.font = '14px "Exo 2", sans-serif';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
+        this.ctx.globalAlpha = 0.8;
         
-        directions.forEach((dir, i) => {
-            const angle = angles[i] - Math.PI/2; // Ajustar para N no topo
-            const x = this.center + this.panX + Math.cos(angle) * (this.radius * this.zoom + 20);
-            const y = this.center + this.panY + Math.sin(angle) * (this.radius * this.zoom + 20);
+        directions.forEach(dir => {
+            const angle = dir.angle + this.state.rotation;
+            const x = this.center + this.state.panX + Math.cos(angle) * (this.radius * this.state.zoom + 25);
+            const y = this.center + this.state.panY + Math.sin(angle) * (this.radius * this.state.zoom + 25);
             
-            this.ctx.fillText(dir, x, y);
+            // Background for better readability
+            this.ctx.fillStyle = 'rgba(0, 8, 20, 0.8)';
+            this.ctx.fillRect(x - 12, y - 12, 24, 24);
+            
+            this.ctx.fillStyle = this.config.zenithColor;
+            this.ctx.fillText(dir.label, x, y);
         });
+        
+        this.ctx.restore();
     }
     
-    drawCelestialObjects(timestamp) {
+    drawCelestialObjects() {
         if (!this.data || !this.data.objects) return;
         
-        this.data.objects.forEach(obj => {
-            const screenPos = this.worldToScreen(obj.x, obj.y);
-            const isHovered = this.hoveredObject === obj;
-            
-            // Calcular tamanho com zoom e fator de brilho
-            const baseSize = obj.size * this.zoom;
-            const brightnessBoost = obj.brightness_factor ? obj.brightness_factor * 0.3 : 0;
-            const size = baseSize * (1 + brightnessBoost);
-            const glowSize = size * 1.8;
-            
-            // Efeito de pulsação para objetos em hover
-            const pulseScale = isHovered ? 1 + 0.15 * Math.sin(timestamp * 0.005) : 1;
-            const finalSize = size * pulseScale;
-            
-            // Desenhar glow/halo mais intenso para estrelas brilhantes
-            const gradient = this.ctx.createRadialGradient(
-                screenPos.x, screenPos.y, 0,
-                screenPos.x, screenPos.y, glowSize
-            );
-            
-            const glowColor = isHovered ? this.config.hoverColor : obj.color;
-            const glowIntensity = obj.brightness_factor > 0.7 ? '80' : '60';
-            const glowFade = obj.brightness_factor > 0.7 ? '40' : '25';
-            
-            gradient.addColorStop(0, glowColor + glowIntensity);
-            gradient.addColorStop(0.5, glowColor + glowFade);
-            gradient.addColorStop(1, 'transparent');
-            
-            this.ctx.fillStyle = gradient;
-            this.ctx.beginPath();
-            this.ctx.arc(screenPos.x, screenPos.y, glowSize, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            // Desenhar estrela com formato de estrela
-            this.ctx.fillStyle = obj.color;
-            this.ctx.beginPath();
-            this.drawStar(obj);
-            this.ctx.fill();
-            
-            // Desenhar nome se estiver em hover ou for muito importante
-            if (isHovered || obj.priority > 1000) {
-                this.ctx.fillStyle = this.config.textColor;
-                this.ctx.font = `${Math.max(10, 12 * this.zoom)}px "Exo 2", sans-serif`;
-                this.ctx.textAlign = 'center';
-                this.ctx.textBaseline = 'top';
-                
-                const textY = screenPos.y + finalSize / 2 + 8;
-                
-                // Fundo semi-transparente para o texto
-                const textWidth = this.ctx.measureText(obj.name).width;
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                this.ctx.fillRect(
-                    screenPos.x - textWidth/2 - 4,
-                    textY - 2,
-                    textWidth + 8,
-                    16
-                );
-                
-                this.ctx.fillStyle = this.config.textColor;
-                this.ctx.fillText(obj.name, screenPos.x, textY);
-            }
+        // Sort objects by magnitude (dimmer first)
+        const sortedObjects = [...this.data.objects].sort((a, b) => b.magnitude - a.magnitude);
+        
+        sortedObjects.forEach(obj => {
+            this.drawCelestialObject(obj);
         });
     }
     
-    drawStar(star) {
-        const x = (star.x + 1) * this.size / 2;
-        const y = (1 - star.y) * this.size / 2;
+    drawCelestialObject(obj) {
+        const screenPos = this.worldToScreen(obj.x, obj.y);
+        const isHovered = this.state.hoveredObject === obj;
+        const isSelected = this.state.selectedObject === obj;
+        const isZenithStar = obj.is_zenith || (this.data.zenith && obj.name === this.data.zenith.name);
         
-        // Larger touch targets for mobile
-        const baseSize = this.isMobile() ? Math.max(4, star.size * 1.5) : star.size;
-        const size = baseSize * this.scale;
+        // Calculate dynamic size
+        const baseSize = Math.max(1, 6 - obj.magnitude) * 1.5;
+        const zoomSize = baseSize * this.state.zoom;
+        const hoverScale = isHovered ? 1.3 : 1;
+        const selectedScale = isSelected ? 1.5 : 1;
+        const finalSize = zoomSize * hoverScale * selectedScale;
         
-        // Glow effect
-        const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, size * 2);
-        gradient.addColorStop(0, star.color + '80');
-        gradient.addColorStop(1, 'transparent');
+        // Get star color based on spectral type
+        const starColor = this.getStarColor(obj);
+        
+        // Draw star glow
+        const glowSize = finalSize * 3;
+        const gradient = this.ctx.createRadialGradient(
+            screenPos.x, screenPos.y, 0,
+            screenPos.x, screenPos.y, glowSize
+        );
+        
+        if (isZenithStar) {
+            // Special golden glow for zenith star
+            gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+            gradient.addColorStop(0.3, 'rgba(255, 215, 0, 0.4)');
+            gradient.addColorStop(0.6, 'rgba(255, 215, 0, 0.2)');
+            gradient.addColorStop(1, 'transparent');
+        } else {
+            // Normal star glow
+            const [r, g, b] = this.hexToRgb(starColor);
+            gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.8 * this.config.starGlowIntensity})`);
+            gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${0.4 * this.config.starGlowIntensity})`);
+            gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${0.2 * this.config.starGlowIntensity})`);
+            gradient.addColorStop(1, 'transparent');
+        }
         
         this.ctx.fillStyle = gradient;
         this.ctx.beginPath();
-        this.ctx.arc(x, y, size * 2, 0, Math.PI * 2);
+        this.ctx.arc(screenPos.x, screenPos.y, glowSize, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Star core
-        this.ctx.fillStyle = star.color;
+        // Draw star core
+        this.ctx.fillStyle = isZenithStar ? '#FFD700' : starColor;
         this.ctx.beginPath();
-        this.ctx.arc(x, y, size, 0, Math.PI * 2);
+        this.ctx.arc(screenPos.x, screenPos.y, finalSize, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Star spikes for brighter stars
-        if (star.magnitude < 3) {
-            this.drawStarSpikes(x, y, size, star.color);
+        // Draw diffraction spikes for bright stars
+        if (obj.magnitude < 2 || isZenithStar) {
+            this.drawDiffractionSpikes(screenPos.x, screenPos.y, finalSize * 2, starColor);
         }
         
-        // Highlight if this is the zenith star
-        if (star.is_zenith) {
-            this.ctx.strokeStyle = this.config.zenithColor;
-            this.ctx.lineWidth = 2;
-            this.ctx.setLineDash([4, 4]);
+        // Draw zenith star special effects
+        if (isZenithStar) {
+            this.drawZenithStarEffects(screenPos.x, screenPos.y, finalSize);
+        }
+        
+        // Draw labels for important or hovered objects
+        if (isHovered || isSelected || obj.priority > 900 || isZenithStar) {
+            this.drawObjectLabel(obj, screenPos, finalSize, isZenithStar);
+        }
+    }
+    
+    drawDiffractionSpikes(x, y, size, color) {
+        this.ctx.save();
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 1;
+        this.ctx.globalAlpha = 0.6;
+        
+        // Four main spikes
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI / 2) + Math.PI / 4;
+            const length = size * 3;
+            
+            // Gradient along spike
+            const gradient = this.ctx.createLinearGradient(
+                x, y,
+                x + Math.cos(angle) * length,
+                y + Math.sin(angle) * length
+            );
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(1, 'transparent');
+            
+            this.ctx.strokeStyle = gradient;
             this.ctx.beginPath();
-            this.ctx.arc(x, y, size * 2.5, 0, Math.PI * 2);
+            this.ctx.moveTo(x, y);
+            this.ctx.lineTo(
+                x + Math.cos(angle) * length,
+                y + Math.sin(angle) * length
+            );
             this.ctx.stroke();
-            this.ctx.setLineDash([]);
         }
+        
+        this.ctx.restore();
     }
     
-    drawStarSpikes(x, y, size, color) {
-        const angle = Math.PI / 5;
+    drawZenithStarEffects(x, y, size) {
+        // Animated golden ring
+        const time = this.state.time * 0.001;
+        const pulseScale = 1 + Math.sin(time * 2) * 0.2;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = '#FFD700';
+        this.ctx.lineWidth = 2;
+        this.ctx.globalAlpha = 0.6;
+        this.ctx.setLineDash([5, 5]);
+        
         this.ctx.beginPath();
+        this.ctx.arc(x, y, size * 4 * pulseScale, 0, Math.PI * 2);
+        this.ctx.stroke();
         
-        for (let i = 0; i < 5; i++) {
-            const r = i % 2 === 0 ? size : size * 0.5;
-            const currentAngle = i * angle - Math.PI / 2;
-            const px = x + Math.cos(currentAngle) * r;
-            const py = y + Math.sin(currentAngle) * r;
-            
-            if (i === 0) {
-                this.ctx.moveTo(px, py);
-            } else {
-                this.ctx.lineTo(px, py);
-            }
-        }
-        
-        this.ctx.closePath();
-        
-        this.ctx.fillStyle = color;
-        this.ctx.fill();
+        this.ctx.restore();
     }
     
-    drawZenith(timestamp) {
-        // Encontrar a estrela do usuário nos objetos
-        let userStar = null;
-        if (this.data && this.data.zenith) {
-            // Procurar especificamente pela estrela do zênite pelo nome
-            userStar = this.data.objects.find(obj => 
-                obj.name === this.data.zenith.name && obj.type === 'star'
-            );
-            
-            // Se não encontrar pelo nome exato, procurar por estrela com maior prioridade
-            if (!userStar) {
-                userStar = this.data.objects.find(obj => 
-                    obj.type === 'star' && obj.priority > 1000
-                );
-            }
+    drawObjectLabel(obj, pos, size, isZenithStar) {
+        this.ctx.save();
+        
+        const labelY = pos.y + size + 15;
+        
+        // Background
+        this.ctx.fillStyle = 'rgba(0, 8, 20, 0.9)';
+        const text = isZenithStar ? `★ ${obj.name} ★` : obj.name;
+        this.ctx.font = isZenithStar ? 'bold 14px "Exo 2", sans-serif' : '12px "Exo 2", sans-serif';
+        const metrics = this.ctx.measureText(text);
+        
+        this.ctx.fillRect(
+            pos.x - metrics.width / 2 - 8,
+            labelY - 10,
+            metrics.width + 16,
+            20
+        );
+        
+        // Text
+        this.ctx.fillStyle = isZenithStar ? '#FFD700' : this.config.textColor;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(text, pos.x, labelY);
+        
+        // Magnitude
+        if (!isZenithStar) {
+            this.ctx.font = '10px "Exo 2", sans-serif';
+            this.ctx.fillStyle = this.config.zenithColor;
+            this.ctx.fillText(`mag ${obj.magnitude.toFixed(1)}`, pos.x, labelY + 15);
         }
         
-        if (userStar) {
-            // Desenhar indicador na posição da estrela do usuário
-            const starPos = this.worldToScreen(userStar.x, userStar.y);
+        this.ctx.restore();
+    }
+    
+    drawShootingStars() {
+        this.state.shootingStars.forEach(star => {
+            // Draw trail
+            star.trail.forEach((point, i) => {
+                const alpha = (i / star.trail.length) * point.life * 0.6;
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                this.ctx.beginPath();
+                this.ctx.arc(point.x, point.y, 1, 0, Math.PI * 2);
+                this.ctx.fill();
+            });
             
-            // Círculo pulsante especial para a estrela do usuário
-            const pulseScale = 1 + 0.15 * Math.sin(timestamp * 0.004);
-            const starRadius = 40 * this.zoom * pulseScale;
-            
-            // Glow especial para a estrela do usuário
+            // Draw head
             const gradient = this.ctx.createRadialGradient(
-                starPos.x, starPos.y, 0,
-                starPos.x, starPos.y, starRadius * 1.5
+                star.x, star.y, 0,
+                star.x, star.y, 10
             );
-            gradient.addColorStop(0, '#FFD700' + '60'); // Dourado
-            gradient.addColorStop(0.5, this.config.zenithColor + '40');
+            gradient.addColorStop(0, `rgba(255, 255, 255, ${star.life})`);
             gradient.addColorStop(1, 'transparent');
             
             this.ctx.fillStyle = gradient;
             this.ctx.beginPath();
-            this.ctx.arc(starPos.x, starPos.y, starRadius * 1.5, 0, Math.PI * 2);
+            this.ctx.arc(star.x, star.y, 10, 0, Math.PI * 2);
             this.ctx.fill();
-            
-            // Círculo especial para a estrela do usuário
-            this.ctx.strokeStyle = '#FFD700';
-            this.ctx.lineWidth = 3;
-            this.ctx.setLineDash([8, 4]);
-            this.ctx.beginPath();
-            this.ctx.arc(starPos.x, starPos.y, starRadius, 0, Math.PI * 2);
-            this.ctx.stroke();
-            this.ctx.setLineDash([]);
-            
-            // Linha conectando ao centro (zênite astronômico)
-            const centerPos = this.worldToScreen(0, 0);
-            this.ctx.strokeStyle = this.config.zenithColor + '80';
-            this.ctx.lineWidth = 2;
-            this.ctx.setLineDash([10, 5]);
-            this.ctx.beginPath();
-            this.ctx.moveTo(centerPos.x, centerPos.y);
-            this.ctx.lineTo(starPos.x, starPos.y);
-            this.ctx.stroke();
-            this.ctx.setLineDash([]);
-            
-            // Label especial para a estrela do usuário
-            this.ctx.fillStyle = '#FFD700';
-            this.ctx.font = `bold ${Math.max(14, 16 * this.zoom)}px "Exo 2", sans-serif`;
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'bottom';
-            this.ctx.fillText('★ SUA ESTRELA ★', starPos.x, starPos.y - starRadius - 10);
-            
-            this.ctx.fillStyle = this.config.textColor;
-            this.ctx.font = `${Math.max(12, 14 * this.zoom)}px "Exo 2", sans-serif`;
-            this.ctx.fillText(this.data.zenith.name, starPos.x, starPos.y - starRadius - 30);
-        }
-        
-        // Desenhar zênite astronômico (centro) de forma mais sutil
+        });
+    }
+    
+    drawZenithIndicator() {
+        // Draw center crosshair (true zenith)
         const zenithPos = this.worldToScreen(0, 0);
         
-        // Cruz pequena no centro
-        this.ctx.strokeStyle = this.config.zenithColor + '60';
+        this.ctx.save();
+        this.ctx.strokeStyle = this.config.zenithColor;
         this.ctx.lineWidth = 1;
-        const crossSize = 8 * this.zoom;
+        this.ctx.globalAlpha = 0.4;
         
+        const crossSize = 10;
         this.ctx.beginPath();
         this.ctx.moveTo(zenithPos.x - crossSize, zenithPos.y);
         this.ctx.lineTo(zenithPos.x + crossSize, zenithPos.y);
@@ -455,88 +741,104 @@ class ModernSkyViewer {
         this.ctx.lineTo(zenithPos.x, zenithPos.y + crossSize);
         this.ctx.stroke();
         
-        // Label discreto do zênite astronômico
-        this.ctx.fillStyle = this.config.zenithColor + '80';
-        this.ctx.font = `${Math.max(8, 10 * this.zoom)}px "Exo 2", sans-serif`;
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'top';
-        this.ctx.fillText('Zênite Astronômico', zenithPos.x, zenithPos.y + crossSize + 5);
-    }
-    
-    drawHoverInfo() {
-        // Hover info disabled for better mobile experience
-        // Touch interactions will show object details directly
-        return;
-    }
-    
-    drawZoomControls() {
-        const controlSize = 30;
-        const margin = 20;
-        const x = margin;
-        const y = this.size - margin - controlSize * 2 - 10;
-        
-        // Fundo dos controles
-        this.ctx.fillStyle = 'rgba(26, 44, 61, 0.8)';
-        this.ctx.strokeStyle = this.config.zenithColor;
-        this.ctx.lineWidth = 1;
-        this.ctx.beginPath();
-        this.ctx.roundRect(x - 5, y - 5, controlSize + 10, controlSize * 2 + 20, 5);
-        this.ctx.fill();
-        this.ctx.stroke();
-        
-        // Botão de zoom in (+)
-        this.ctx.fillStyle = this.config.textColor;
-        this.ctx.font = 'bold 20px "Exo 2", sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('+', x + controlSize/2, y + controlSize/2);
-        
-        // Botão de zoom out (-)
-        this.ctx.fillText('−', x + controlSize/2, y + controlSize + 10 + controlSize/2);
-        
-        // Indicador de zoom
-        this.ctx.font = '10px "Exo 2", sans-serif';
+        // Label
         this.ctx.fillStyle = this.config.zenithColor;
-        this.ctx.fillText(`${(this.zoom * 100).toFixed(0)}%`, x + controlSize/2, y + controlSize * 2 + 25);
+        this.ctx.font = '10px "Exo 2", sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.globalAlpha = 0.6;
+        this.ctx.fillText('Zênite', zenithPos.x, zenithPos.y + 20);
+        
+        this.ctx.restore();
+    }
+    
+    drawUI() {
+        // Zoom indicator
+        const zoomPercent = Math.round(this.state.zoom * 100);
+        
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(0, 8, 20, 0.8)';
+        this.ctx.fillRect(20, this.size - 40, 80, 25);
+        
+        this.ctx.fillStyle = this.config.textColor;
+        this.ctx.font = '12px "Exo 2", sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`Zoom: ${zoomPercent}%`, 60, this.size - 25);
+        this.ctx.restore();
+        
+        // Instructions (fade out after 5 seconds)
+        const fadeStart = 3000;
+        const fadeDuration = 2000;
+        const elapsed = this.state.time;
+        
+        if (elapsed < fadeStart + fadeDuration) {
+            const alpha = elapsed < fadeStart ? 1 : 1 - (elapsed - fadeStart) / fadeDuration;
+            
+            this.ctx.save();
+            this.ctx.globalAlpha = alpha * 0.8;
+            this.ctx.fillStyle = this.config.textColor;
+            this.ctx.font = '11px "Exo 2", sans-serif';
+            this.ctx.textAlign = 'center';
+            
+            const instructions = this.isMobile() ? 
+                'Toque para explorar • Belisque para zoom' : 
+                'Clique para explorar • Scroll para zoom';
+            
+            this.ctx.fillText(instructions, this.center, 30);
+            this.ctx.restore();
+        }
+    }
+    
+    getStarColor(obj) {
+        // Determine color based on spectral type or magnitude
+        if (obj.spectral_type) {
+            const type = obj.spectral_type.charAt(0).toUpperCase();
+            return this.config.starColors[type] || this.config.starColors.G;
+        }
+        
+        // Estimate based on magnitude
+        if (obj.magnitude < 0) return this.config.starColors.B;
+        if (obj.magnitude < 1) return this.config.starColors.A;
+        if (obj.magnitude < 2) return this.config.starColors.F;
+        if (obj.magnitude < 3) return this.config.starColors.G;
+        if (obj.magnitude < 4) return this.config.starColors.K;
+        return this.config.starColors.M;
+    }
+    
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? [
+            parseInt(result[1], 16),
+            parseInt(result[2], 16),
+            parseInt(result[3], 16)
+        ] : [255, 255, 255];
     }
     
     showObjectDetails(obj) {
-        // Criar evento customizado para mostrar detalhes
         const event = new CustomEvent('objectSelected', {
             detail: obj
         });
         document.dispatchEvent(event);
     }
     
+    isMobile() {
+        return window.innerWidth <= 768 || 'ontouchstart' in window;
+    }
+    
     destroy() {
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
         }
-    }
-    
-    isMobile() {
-        return window.innerWidth <= 768 || 'ontouchstart' in window;
+        
+        // Remove event listeners
+        window.removeEventListener('resize', () => this.resizeCanvas());
     }
 }
 
-// Função para inicializar o visualizador
+// Initialize the viewer
 function initializeModernSkyViewer(canvasId, skyData) {
     return new ModernSkyViewer(canvasId, skyData);
 }
 
-// Adicionar método roundRect se não existir (compatibilidade)
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-        this.beginPath();
-        this.moveTo(x + radius, y);
-        this.lineTo(x + width - radius, y);
-        this.quadraticCurveTo(x + width, y, x + width, y + radius);
-        this.lineTo(x + width, y + height - radius);
-        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        this.lineTo(x + radius, y + height);
-        this.quadraticCurveTo(x, y + height, x, y + height - radius);
-        this.lineTo(x, y + radius);
-        this.quadraticCurveTo(x, y, x + radius, y);
-        this.closePath();
-    };
-} 
+// Export for use
+window.ModernSkyViewer = ModernSkyViewer;
+window.initializeModernSkyViewer = initializeModernSkyViewer; 
