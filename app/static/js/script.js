@@ -766,8 +766,8 @@ function optimizePerformance() {
     };
     
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
                 const element = entry.target;
                 
                 // Ativar animações apenas quando visível

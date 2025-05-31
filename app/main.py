@@ -14,10 +14,20 @@ from app.astro_data import (
     get_astronomical_coincidences
 )
 from app.modern_sky_renderer import ModernSkyRenderer
-from app.zenith_calculator import find_zenith_star
+from app.zenith_calculator import find_zenith_star, load_hipparcos_data
 from app.constellation_data import get_constellation_data
+from skyfield.api import load, wgs84
+from skyfield.units import Angle
+from skyfield.timelib import Time
+from skyfield.constants import GM_SUN_Pitjeva_2005_km3_s2 as GM_SUN
+from skyfield.data import hipparcos
+from skyfield.units import Distance
+import math
+CONSTELLATIONS = get_constellation_data()
+from app.star_data_extended import NAMED_STARS, find_nearest_named_star
+from app.astro_data import ASTRONOMICAL_EVENTS
 
-app = FastAPI(title="Murphy-1", description="Explore as coordenadas do espaço-tempo e encontre sua estrela-guia")
+app = FastAPI(title="Murphy-1", description="Calculadora de Estrelas Zenitais com TARS")
 
 # Adicionar middleware CORS
 app.add_middleware(
@@ -62,104 +72,76 @@ async def debug_middleware(request: Request, call_next):
     return response
 
 # Lazy loading - criar objetos apenas quando necessário
-calculator = None
-modern_sky_renderer = None
-
-def get_calculator():
-    global calculator
-    if calculator is None:
-        calculator = AstrologyCalculator()
-    return calculator
+modern_sky_renderer_instance = None
 
 def get_modern_sky_renderer():
-    global modern_sky_renderer
-    if modern_sky_renderer is None:
-        modern_sky_renderer = ModernSkyRenderer()
-    return modern_sky_renderer
+    global modern_sky_renderer_instance
+    if modern_sky_renderer_instance is None:
+        modern_sky_renderer_instance = ModernSkyRenderer()
+    return modern_sky_renderer_instance
+
+# Carregar dados do Hipparcos
+df = load_hipparcos_data()
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Página inicial"""
-    print("🏠 Home endpoint called")
-    print(f"🏠 Templates object: {templates}")
-    print(f"🏠 Looking for index.html in: {BASE_DIR / 'templates' / 'index.html'}")
-    
-    return templates.TemplateResponse("index.html", {"request": request})
+    """Página inicial com formulário de entrada"""
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request}
+    )
 
-@app.post("/calculate")
-async def calculate_cosmic_echo(
+@app.post("/calculate", response_class=HTMLResponse)
+async def calculate(
     request: Request,
     birth_date: str = Form(...),
     birth_time: str = Form(...),
-    city: str = Form(...),
-    country: str = Form(...)
+    latitude: float = Form(...),
+    longitude: float = Form(...)
 ):
-    """Calcular análise Murphy-1"""
+    """Calcula a estrela zenital e retorna o resultado"""
     try:
-        # Parse da data de nascimento
-        birth_datetime = datetime.strptime(f"{birth_date} {birth_time}", "%Y-%m-%d %H:%M")
+        # Usar a função find_zenith_star existente
+        result = find_zenith_star(birth_date, birth_time, latitude, longitude)
         
-        # Coordenadas fixas para testes (São Paulo)
-        latitude = -23.5505
-        longitude = -46.6333
+        # Gerar visualização do céu se tiver dados necessários
+        try:
+            renderer = get_modern_sky_renderer()
+            sky_data = renderer.generate_modern_sky_data(
+                result['ra_degrees'],
+                result['dec_degrees'],
+                result,
+                datetime.strptime(f"{birth_date} {birth_time}", "%Y-%m-%d %H:%M"),
+                latitude,
+                longitude
+            )
+            result.update(sky_data)
+        except Exception as sky_error:
+            print(f"Erro na visualização do céu: {sky_error}")
+            # Dados padrão se houver erro
+            result.update({
+                'stars': [],
+                'constellation': {'name': result.get('constellation', 'N/A'), 'lines': []}
+            })
         
-        # Encontrar estrela do zênite
-        zenith_star = find_zenith_star(birth_date, birth_time, latitude, longitude)
-        
-        # Gerar dados do céu moderno
-        sky_renderer = get_modern_sky_renderer()
-        modern_sky_data = sky_renderer.generate_modern_sky_data(
-            zenith_star['ra_degrees'], 
-            zenith_star['dec_degrees'], 
-            zenith_star, 
-            birth_datetime, 
-            latitude, 
-            longitude
+        return templates.TemplateResponse(
+            "result.html",
+            {
+                "request": request,
+                "result": result,
+                "constellation": {'name': result.get('constellation', 'N/A')},
+                "star_data": result,
+                "events": ASTRONOMICAL_EVENTS
+            }
         )
         
-        # Obter dados de astrologia
-        astrology_data = get_astrology_data(birth_date, birth_time, latitude, longitude)
-        
-        # Obter coincidências astronômicas
-        coincidences = get_astronomical_coincidences(birth_date, birth_time, latitude, longitude)
-        
-        # Gerar dados para o template
-        result_data = {
-            'birth_info': {
-                'date': birth_date,
-                'time': birth_time,
-                'location': f"{city}, {country}",
-                'coordinates': f"{latitude:.4f}, {longitude:.4f}"
-            },
-            'star': zenith_star,
-            'cosmic_message': generate_cosmic_message(zenith_star),
-            'modern_sky_data': modern_sky_data,
-            'astrology': astrology_data,
-            'star_curiosities': zenith_star.get('curiosities', {}),
-            'coincidences': coincidences
-        }
-        
-        return templates.TemplateResponse("result.html", {
-            "request": request,
-            "data": result_data
-        })
-        
     except Exception as e:
-        print(f"Erro no cálculo: {e}")
-        return templates.TemplateResponse("error.html", {
-            "request": request,
-            "error": str(e)
-        })
-
-@app.get("/health")
-async def health_check():
-    """Health check para Railway"""
-    return {"status": "ok", "message": "Murphy-1 está funcionando!"}
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/health")
-async def api_health_check():
-    """Health check alternativo para Railway compatibility"""
-    return {"status": "ok", "message": "Murphy-1 está funcionando!", "version": "1.0.0"}
+async def health_check():
+    """Endpoint de verificação de saúde para Railway"""
+    return {"status": "healthy"}
 
 @app.get("/test")
 async def test_endpoint():

@@ -256,7 +256,7 @@ class ModernSkyViewer {
     
     handleMouseDown(e) {
         if (e.button === 0) { // Left mouse button
-            const rect = this.canvas.getBoundingClientRect();
+        const rect = this.canvas.getBoundingClientRect();
             this.state.isDragging = true;
             this.state.dragStartX = e.clientX - rect.left;
             this.state.dragStartY = e.clientY - rect.top;
@@ -312,8 +312,8 @@ class ModernSkyViewer {
             const y = e.clientY - rect.top;
             
             const clickedObject = this.getObjectAtPosition(x, y);
-            if (clickedObject) {
-                this.showObjectDetails(clickedObject);
+        if (clickedObject) {
+            this.showObjectDetails(clickedObject);
                 this.state.selectedObject = clickedObject;
             }
         }
@@ -633,7 +633,7 @@ class ModernSkyViewer {
     }
     
     drawCelestialObject(obj) {
-        const screenPos = this.worldToScreen(obj.x, obj.y);
+            const screenPos = this.worldToScreen(obj.x, obj.y);
         const isHovered = this.state.hoveredObject === obj;
         const isSelected = this.state.selectedObject === obj;
         const isZenithStar = obj.is_zenith || (this.data.zenith && obj.name === this.data.zenith.name);
@@ -650,11 +650,11 @@ class ModernSkyViewer {
         
         // Draw star glow
         const glowSize = finalSize * 3;
-        const gradient = this.ctx.createRadialGradient(
-            screenPos.x, screenPos.y, 0,
-            screenPos.x, screenPos.y, glowSize
-        );
-        
+            const gradient = this.ctx.createRadialGradient(
+                screenPos.x, screenPos.y, 0,
+                screenPos.x, screenPos.y, glowSize
+            );
+            
         if (isZenithStar) {
             // Special golden glow for zenith star
             gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
@@ -669,18 +669,18 @@ class ModernSkyViewer {
             gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${0.2 * this.config.starGlowIntensity})`);
             gradient.addColorStop(1, 'transparent');
         }
-        
-        this.ctx.fillStyle = gradient;
-        this.ctx.beginPath();
-        this.ctx.arc(screenPos.x, screenPos.y, glowSize, 0, Math.PI * 2);
-        this.ctx.fill();
-        
+            
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.arc(screenPos.x, screenPos.y, glowSize, 0, Math.PI * 2);
+            this.ctx.fill();
+            
         // Draw star core
         this.ctx.fillStyle = isZenithStar ? '#FFD700' : starColor;
-        this.ctx.beginPath();
+            this.ctx.beginPath();
         this.ctx.arc(screenPos.x, screenPos.y, finalSize, 0, Math.PI * 2);
-        this.ctx.fill();
-        
+            this.ctx.fill();
+            
         // Draw diffraction spikes for bright stars
         if (obj.magnitude < 2 || isZenithStar) {
             this.drawDiffractionSpikes(screenPos.x, screenPos.y, finalSize * 2, starColor);
@@ -859,7 +859,7 @@ class ModernSkyViewer {
             
             this.ctx.save();
             this.ctx.globalAlpha = alpha * 0.8;
-            this.ctx.fillStyle = this.config.textColor;
+        this.ctx.fillStyle = this.config.textColor;
             this.ctx.font = '11px "Exo 2", sans-serif';
             this.ctx.textAlign = 'center';
             

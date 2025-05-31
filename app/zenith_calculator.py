@@ -4,10 +4,16 @@ Zenith Calculator - Calcula a estrela no zênite para um momento específico
 
 from datetime import datetime
 import pytz
-from skyfield.api import load, Topos
+from skyfield.api import load, Topos, wgs84
+from skyfield.units import Angle
+from skyfield.timelib import Time
+from skyfield.data import hipparcos
 from app.star_data import find_nearest_named_star
 import pandas as pd
 import math
+import numpy as np
+import os
+from pathlib import Path
 
 # Cache global para dados astronômicos
 _ts = None
@@ -21,93 +27,63 @@ def _get_astronomical_data():
         _planets = load('de421.bsp')
     return _ts, _planets
 
+def load_hipparcos_data():
+    """Load Hipparcos catalog data"""
+    # Create data directory if it doesn't exist
+    data_dir = Path(__file__).parent / 'data'
+    data_dir.mkdir(exist_ok=True)
+    
+    # Download and load the catalog
+    with load.open(hipparcos.URL) as f:
+        df = pd.read_csv(f, sep='|', skiprows=1)
+    
+    return df
+
 def find_zenith_star(birth_date, birth_time, latitude, longitude):
-    """
-    Encontra a estrela nomeada mais próxima do zênite no momento do nascimento
-    """
+    """Find the star that was at zenith at the given time and location"""
     try:
-        # Converter strings para datetime
-        if isinstance(birth_date, str) and isinstance(birth_time, str):
-            birth_datetime = datetime.strptime(f"{birth_date} {birth_time}", "%Y-%m-%d %H:%M")
-        else:
-            birth_datetime = datetime.combine(birth_date, birth_time)
-            
-        # Adicionar timezone se não tiver
-        if birth_datetime.tzinfo is None:
-            birth_datetime = pytz.UTC.localize(birth_datetime)
-            
-        # Obter dados astronômicos
-        ts, planets = _get_astronomical_data()
-        earth = planets['earth']
+        # Load Hipparcos data
+        df = load_hipparcos_data()
         
-        # Criar objeto de tempo
+        # Parse birth datetime
+        birth_datetime = datetime.strptime(f"{birth_date} {birth_time}", "%Y-%m-%d %H:%M")
+        
+        # Create time object
+        ts = load.timescale()
         t = ts.from_datetime(birth_datetime)
         
-        # Criar observador
-        observer = earth + Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+        # Create location object
+        location = wgs84.latlon(latitude, longitude)
         
-        # Calcular tempo sideral local
-        greenwich_sidereal = t.gast
-        local_sidereal = greenwich_sidereal + longitude / 15.0
-        local_sidereal = local_sidereal % 24
+        # Calculate zenith position
+        zenith = location.at(t).from_altaz(alt_degrees=90, az_degrees=0)
         
-        # Coordenadas do zênite
-        zenith_ra = local_sidereal * 15  # Converter horas para graus
-        zenith_dec = latitude
+        # Convert star positions to same frame
+        star_positions = df[['ra', 'dec']].values
         
-        # Buscar estrela nomeada mais próxima
-        star_name, distance, star_data = find_nearest_named_star(zenith_ra, zenith_dec)
+        # Calculate angular distances
+        distances = []
+        for ra, dec in star_positions:
+            star_pos = zenith.from_radec(ra, dec)
+            distance = star_pos.separation_from(zenith).degrees
+            distances.append(distance)
         
-        # Montar dados da estrela com informações precisas
-        result = {
-            'name': star_name,
-            'constellation': star_data['constellation'],
-            'magnitude': star_data['magnitude'],
-            'distance_ly': star_data['distance_ly'],
-            'ra_degrees': star_data['ra_degrees'],
-            'dec_degrees': star_data['dec_degrees'],
-            'distance_to_zenith': round(distance, 2),
-            'spectral_class': star_data['spectral_class'],
-            'color': get_star_color(star_data['spectral_class']),
-            'radial_velocity': generate_velocity_description(star_name),
-            'curiosities': generate_star_curiosities(
-                star_name,
-                star_data
-            ),
-            # Dados adicionais da estrela
-            'age_billion_years': star_data['age_billion_years'],
-            'temperature_k': star_data['temperature_k'],
-            'mass_solar': star_data['mass_solar'],
-            'history': star_data['history'],
-            'constellation_stars': star_data['constellation_stars']
+        # Find closest star
+        closest_idx = np.argmin(distances)
+        closest_star = df.iloc[closest_idx]
+        
+        return {
+            'name': closest_star['name'],
+            'ra_degrees': closest_star['ra'],
+            'dec_degrees': closest_star['dec'],
+            'magnitude': closest_star['magnitude'],
+            'distance_ly': closest_star['distance'],
+            'spectral_class': closest_star['spectral_type'],
+            'constellation': closest_star['constellation']
         }
-        
-        return result
         
     except Exception as e:
-        print(f"Erro no cálculo do zênite: {e}")
-        # Retornar Sirius como fallback
-        from app.star_data import NAMED_STARS
-        sirius = NAMED_STARS['Sirius']
-        return {
-            'name': 'Sirius',
-            'constellation': sirius['constellation'],
-            'magnitude': sirius['magnitude'],
-            'distance_ly': sirius['distance_ly'],
-            'ra_degrees': sirius['ra_degrees'],
-            'dec_degrees': sirius['dec_degrees'],
-            'distance_to_zenith': 0,
-            'spectral_class': sirius['spectral_class'],
-            'color': '#E6F3FF',
-            'radial_velocity': {'description': 'Se aproximando a 5.5 km/s'},
-            'curiosities': generate_star_curiosities('Sirius', sirius),
-            'age_billion_years': sirius['age_billion_years'],
-            'temperature_k': sirius['temperature_k'],
-            'mass_solar': sirius['mass_solar'],
-            'history': sirius['history'],
-            'constellation_stars': sirius['constellation_stars']
-        }
-
+        raise Exception(f"Error finding zenith star: {str(e)}")
 
 def angular_distance(ra1, dec1, ra2, dec2):
     """Calcula distância angular entre duas posições em graus"""

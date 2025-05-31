@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado - Murphy-1</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="tars-container">
+            <div class="tars">
+                <div class="tars-face">
+                    <div class="tars-eye left"></div>
+                    <div class="tars-eye right"></div>
+                    <div class="tars-mouth"></div>
+                </div>
+            </div>
+            <div class="tars-quote">
+                "Murphy's law doesn't mean that something bad will happen. It means that whatever can happen, will happen."
+            </div>
+        </div>
+
+        <div class="result-container">
+            <h1>Sua Estrela Zenital</h1>
+            
+            <div class="sky-projection">
+                <canvas id="skyCanvas"></canvas>
+            </div>
+
+            <div class="star-info">
+                <h2>{% if star_data %}{{ star_data.name }}{% else %}Estrela Desconhecida{% endif %}</h2>
+                <p class="constellation">Constelação: {% if constellation %}{{ constellation.name }}{% else %}N/A{% endif %}</p>
+                {% if star_data %}
+                <p class="distance">Distância: {{ star_data.distance_ly }} anos-luz</p>
+                <p class="magnitude">Magnitude: {{ star_data.magnitude }}</p>
+                <p class="spectral">Classe Espectral: {{ star_data.spectral_class }}</p>
+                <p class="age">Idade: {{ "%.3f"|format(star_data.age_billion_years) }} bilhões de anos</p>
+                <p class="mass">Massa: {{ star_data.mass_solar }} massas solares</p>
+                <p class="temperature">Temperatura: {{ star_data.temperature_k }} K</p>
+                {% endif %}
+            </div>
+
+            {% if star_data and star_data.history %}
+            <div class="star-history">
+                <h3>História e Significado</h3>
+                <p>{{ star_data.history }}</p>
+            </div>
+            {% endif %}
+
+            {% if star_data %}
+            <div class="temporal-message">
+                <h3>Mensagem Temporal</h3>
+                <p>Esta estrela nasceu há {{ "%.3f"|format(star_data.age_billion_years) }} bilhões de anos. 
+                   Quando sua luz começou sua jornada, a Terra ainda era um planeta jovem. 
+                   Cada fóton que você vê hoje carrega uma mensagem do passado distante do universo.</p>
+            </div>
+            {% endif %}
+
+            <div class="events">
+                <h3>Eventos Astronômicos Próximos</h3>
+                <ul>
+                    {% for event in events %}
+                    <li>
+                        <strong>{{ event.name }}</strong>
+                        <p>{{ event.description }}</p>
+                        <span class="date">{{ event.date }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <a href="/" class="back-button">Calcular Novamente</a>
+        </div>
+    </div>
+
+    <script>
+        // Dados do céu
+        const skyData = {
+            stars: {% if result.stars %}{{ result.stars | tojson | safe }}{% else %}[]{% endif %},
+            constellation: {% if constellation %}{{ constellation | tojson | safe }}{% else %}{}{% endif %},
+            zenith: {
+                ra: {% if result.ra_degrees %}{{ result.ra_degrees }}{% else %}0{% endif %},
+                dec: {% if result.dec_degrees %}{{ result.dec_degrees }}{% else %}0{% endif %}
+            }
+        };
+
+        // Configuração do canvas
+        const canvas = document.getElementById('skyCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Ajustar tamanho do canvas
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const size = Math.min(container.clientWidth * 0.9, 400);
+            canvas.width = size;
+            canvas.height = size;
+            drawSky();
+        }
+
+        // Desenhar o céu
+        function drawSky() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) * 0.45;
+
+            // Fundo escuro
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, width, height);
+
+            // Borda do projetor
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Estrelas
+            if (skyData.stars && skyData.stars.length > 0) {
+                skyData.stars.forEach(function(star) {
+                    const x = centerX + (star.x * radius);
+                    const y = centerY + (star.y * radius);
+                    const size = Math.max(1, 4 * (1 - star.magnitude / 6));
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = star.color || '#ffffff';
+                    ctx.fill();
+                });
+            }
+
+            // Linhas da constelação
+            if (skyData.constellation && skyData.constellation.lines) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.4)';
+                ctx.lineWidth = 1.5;
+
+                skyData.constellation.lines.forEach(function(line) {
+                    const start = skyData.stars.find(function(s) { 
+                        return s.name === line[0]; 
+                    });
+                    const end = skyData.stars.find(function(s) { 
+                        return s.name === line[1]; 
+                    });
+                    
+                    if (start && end) {
+                        ctx.moveTo(
+                            centerX + (start.x * radius),
+                            centerY + (start.y * radius)
+                        );
+                        ctx.lineTo(
+                            centerX + (end.x * radius),
+                            centerY + (end.y * radius)
+                        );
+                    }
+                });
+                ctx.stroke();
+            }
+
+            // Estrela zenital
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            
+            // Brilho especial
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 25);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.4)');
+            gradient.addColorStop(1, 'transparent');
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Cruz central
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX - 15, centerY);
+            ctx.lineTo(centerX + 15, centerY);
+            ctx.moveTo(centerX, centerY - 15);
+            ctx.lineTo(centerX, centerY + 15);
+            ctx.stroke();
+        }
+
+        // Inicializar
+        window.addEventListener('load', function() {
+            resizeCanvas();
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html> 
