@@ -20,12 +20,5 @@ RUN echo "=== Testing app import with debug ===" && python -c "import sys; print
 
 EXPOSE 8000
 
-# Add startup script with better error handling
-RUN echo '#!/bin/bash\n\
-echo "=== MURPHY-1 STARTUP DEBUG ==="\n\
-echo "PORT: ${PORT:-8000}"\n\
-echo "Starting uvicorn with extended timeout..."\n\
-exec python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info --timeout-keep-alive 300\n\
-' > /app/start.sh && chmod +x /app/start.sh
-
-CMD ["/app/start.sh"] 
+# Simple command that handles PORT correctly
+CMD python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info 
